@@ -5,12 +5,19 @@ const bcrypt = require("bcrypt");
 
 const loadHomepage = async (req, res) => {
     try {
-        return res.render("home");
+        const user = req.session.user;
+        if (user) {
+            const userData = await User.findOne({ _id: user._id });
+            res.render("home", { user: userData });  // Pass userData to template
+        } else {
+            res.render("home", { user: null });  // Ensure user is always defined
+        }
     } catch (error) {
-        console.log("Home page not found");
-        res.status(500).send("Server error");
+        console.log("Home page not loading", error);
+        res.status(500).send("Server Error");
     }
-}
+};
+
 
 const pageNotFound = async (req, res) => {
     try {
@@ -167,29 +174,50 @@ const loadLogin = async (req, res) => {
 
 const login = async (req, res) => {
     try {
-        const {email, password} = req.body;
-        const findUser = await User.findOne({isAdmin: 0, email:email});
+        const { email, password } = req.body;
+        const findUser = await User.findOne({ isAdmin: 0, email: email });
 
-        if(!findUser) {
-            return res.render("login", {message:"User not found"});
+        if (!findUser) {
+            return res.render("login", { message: "User not found" });
         }
-        if(findUser.isBlocked) {
-            return res.render("login", {message:"User is blocked by admin"});
-        }
-
-        const passwordMatch = await bcrypt.compare(password, findUser. password);
-
-        if(!passwordMatch) {
-            return res.render("login", {message:"Incorrect Password"});
+        if (findUser.isBlocked) {
+            return res.render("login", { message: "User is blocked by admin" });
         }
 
-        req.session.user = findUser._id;
-        res.redirect("/")
+        const passwordMatch = await bcrypt.compare(password, findUser.password);
+
+        if (!passwordMatch) {
+            return res.render("login", { message: "Incorrect Password" });
+        }
+
+        // Store user in session
+        req.session.user = { _id: findUser._id, name: findUser.name };
+
+        req.session.save(() => {
+            res.redirect("/");
+        });
+
     } catch (error) {
-        console.error("login error", error);
-        res.render("login", {message:"login failed. Please try again later"})
+        console.error("Login error", error);
+        res.render("login", { message: "Login failed. Please try again later" });
+    }
+};
+
+const logout = async (req, res) => {
+    try {
+        req.session.destroy((err) => {
+            if(err) {
+                console.log("Session destruction error", err.message);
+                return res.redirect("/pageNotFound");
+            }
+            return res.redirect("/login");
+        })
+    } catch (error) {
+        console.log("Logout error", error);
+        res.redirect("/pageNotFound");
     }
 }
+
 
 module.exports = {
     loadHomepage,
@@ -199,5 +227,6 @@ module.exports = {
     signup,
     verifyOtp,
     resendOtp,
-    login
+    login,
+    logout
 }
