@@ -17,4 +17,6 @@ router.get('/auth/google/callback', passport.authenticate('google', {failureRedi
     res.redirect('/')
 });
 
+router.post("/login", userController.login);
+
 module.exports = router;
