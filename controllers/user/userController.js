@@ -190,8 +190,9 @@ const login = async (req, res) => {
             return res.render("login", { message: "Incorrect Password" });
         }
 
-        // Store user in session
+        // ✅ Store user in session
         req.session.user = { _id: findUser._id, name: findUser.name };
+        console.log("✅ User logged in:", req.session.user); // Debugging
 
         req.session.save(() => {
             res.redirect("/");
@@ -206,17 +207,18 @@ const login = async (req, res) => {
 const logout = async (req, res) => {
     try {
         req.session.destroy((err) => {
-            if(err) {
-                console.log("Session destruction error", err.message);
+            if (err) {
+                console.log("❌ Session destruction error:", err.message);
                 return res.redirect("/pageNotFound");
             }
+            console.log("✅ User logged out"); // Debugging
             return res.redirect("/login");
-        })
+        });
     } catch (error) {
         console.log("Logout error", error);
         res.redirect("/pageNotFound");
     }
-}
+};
 
 
 module.exports = {

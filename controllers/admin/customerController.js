@@ -10,7 +10,7 @@ const customerInfo = async (req, res) => {
         if (req.query.page) {
             page = req.query.page;
         }
-        const limit = 3;
+        const limit = 5;
 
         // Fetch user data from database
         const userData = await User.find({

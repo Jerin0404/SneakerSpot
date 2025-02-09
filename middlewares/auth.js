@@ -18,7 +18,6 @@ const userAuth = (req, res, next) => {
         res.redirect("/login")
     }
 }
-
 const adminAuth = (req, res, next) => {
     User.findOne({isAdmin:true})
     .then(data=> {
@@ -33,6 +32,8 @@ const adminAuth = (req, res, next) => {
         res.status(500).send("Internal Server Error");
     })
 }
+
+
 
 module.exports = {
     userAuth,

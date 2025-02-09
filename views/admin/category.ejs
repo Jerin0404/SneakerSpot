@@ -1,0 +1,180 @@
+<%- include("../../views/partials/admin/header") %>
+
+<head>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10/dist/sweetalert2.min.css"/>
+</head>
+
+<body>
+  <section class="content-main">
+    <div class="content-header">
+      <h2 class="content-title card-title">Category</h2>
+    </div>
+
+    <header class="card-header text-center mb-20">
+      <form action="/admin/category/" method="get">
+        <div class="input-group input-group-sm border rounded-pill" style="width: 500px; margin-left: 230px">
+          <input type="text" class="form-control border-0 rounded-pill mt-3" placeholder="Search categories" name="search"/>
+          <button class="btn" type="submit">Search</button>
+        </div>
+      </form>
+    </header>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-3">
+            <form method="post" action="/admin/addCategory" onsubmit="return handleFormSubmit(event)">
+              <div class="mb-4">
+                <label class="form-label">Name</label>
+                <input type="text" name="name" placeholder="Type here" class="form-control"/>
+                <div id="name-error" class="error-message"></div>
+              </div>
+              <div class="mb-4">
+                <label class="form-label">Description</label>
+                <textarea placeholder="Type here" name="description" class="form-control"></textarea>
+                <div id="description-error" class="error-message"></div>
+              </div>
+              <div class="d-grid">
+                <button class="btn btn-primary" type="submit">Create category</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="col-md-8">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Offer Price</th>
+                    <th>Offer</th>
+                    <th>Status</th>
+                    <th>List/Unlist</th>
+                    <th>Edit</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% cat.reverse().forEach((category) => { %>
+                  <tr>
+                    <td><%= category.name %></td>
+                    <td><%= category.description %></td>
+                    <td>
+                      <% if (category.categoryOffer) { %>
+                        <%= category.categoryOffer %>%
+                      <% } else { %>
+                        0%
+                      <% } %>
+                    </td>
+                    <td>
+                      <% if (category.categoryOffer === 0) { %>
+                        <button class="btn btn-info" onclick="addOffer('<%= category._id %>')">Add Offer</button>
+                      <% } else { %>
+                        <button class="btn btn-danger" onclick="removeOffer('<%= category._id %>')">Remove</button>
+                      <% } %>
+                    </td>
+                    <td>
+                      <% if (category.status === "listed") { %>
+                        <span class="badge rounded-pill alert-success">Listed</span>
+                      <% } else { %>
+                        <span class="badge rounded-pill alert-danger">Unlisted</span>
+                      <% } %>
+                    </td>
+                    <td>
+                      <button class="btn btn-danger">Unlist</button>
+                      <button class="btn btn-success">List</button>
+                    </td>
+                    <td>
+                      <a href="#" class="btn btn-info">Edit</a>
+                    </td>
+                  </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-container">
+      <% if (currentPage > 1) { %>
+        <a href="?page=<%= currentPage - 1 %>">&laquo; Previous</a>
+      <% } %>
+
+      <% for (let i = 1; i <= totalPages; i++) { %>
+        <% if (i === currentPage) { %>
+          <span class="current-page"><%= i %></span>
+        <% } else { %>
+          <a href="?page=<%= i %>"><%= i %></a>
+        <% } %>
+      <% } %>
+
+      <% if (currentPage < totalPages) { %>
+        <a href="?page=<%= currentPage + 1 %>">Next &raquo;</a>
+      <% } %>
+    </div>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10/dist/sweetalert2.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+  <script>
+    async function addOffer(categoryId) {
+      const { value: amount } = await Swal.fire({
+        title: "Offer in percentage",
+        input: "number",
+        inputLabel: "Percentage",
+        inputPlaceholder: "%"
+      });
+
+      if (amount) {
+        try {
+          const response = await fetch("/admin/addCategoryOffer", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ percentage: amount, categoryId }),
+          });
+
+          const data = await response.json();
+          if (response.ok && data.status === true) {
+            Swal.fire("Offer added", "The offer has been added", "success").then(() => {
+              location.reload();
+            });
+          } else {
+            Swal.fire("Failed", data.message || "Adding offer failed", "error");
+          }
+        } catch (error) {
+          Swal.fire("Error", "An error occurred while adding the offer", "error");
+        }
+      }
+    }
+
+    async function removeOffer(categoryId) {
+      try {
+        const response = await fetch("/admin/removeCategoryOffer", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ categoryId }),
+        });
+
+        const data = await response.json();
+        if (response.ok && data.status === true) {
+          Swal.fire("Offer removed", "The offer has been removed", "success").then(() => {
+            location.reload();
+          });
+        } else {
+          Swal.fire("Failed", data.message || "Removing offer failed", "error");
+        }
+      } catch (error) {
+        Swal.fire("Error", "An error occurred while removing the offer", "error");
+      }
+    }
+  </script>
+
+  <%- include("../../views/partials/admin/footer") %>
+</body>
+
