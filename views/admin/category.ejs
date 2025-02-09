@@ -74,15 +74,22 @@
                       <% } %>
                     </td>
                     <td>
-                      <% if (category.status === "listed") { %>
+                      <% if (category.isListed) { %>
                         <span class="badge rounded-pill alert-success">Listed</span>
                       <% } else { %>
                         <span class="badge rounded-pill alert-danger">Unlisted</span>
                       <% } %>
                     </td>
                     <td>
-                      <button class="btn btn-danger">Unlist</button>
-                      <button class="btn btn-success">List</button>
+                      <% if (category.isListed) { %>
+                      <button class="btn btn-danger" style="width: 70px;">
+                        <a href="/admin/listCategory?id=<%=category._id%>" class="text-white">Unlist</a>
+                      </button>
+                      <%} else {%>
+                      <button class="btn btn-danger" style="width: 70px;">
+                        <a href="/admin/unlistCategory?id=<%=category._id%>" class="text-white">List</a>
+                      </button>
+                      <%}%>
                     </td>
                     <td>
                       <a href="#" class="btn btn-info">Edit</a>
