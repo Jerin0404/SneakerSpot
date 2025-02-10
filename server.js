@@ -35,11 +35,7 @@ app.set("views", [path.join(__dirname, "views/user"), path.join(__dirname, "view
 app.use(express.static(path.join(__dirname, "public")));
 
 
-app.use((req, res, next) => {
-    console.log("user in session middleware", req.session.user);
-    res.locals.user = req.session.user || null;
-    next();
-})
+
 app.use("/", userRouter);
 app.use("/admin", adminRouter);
 

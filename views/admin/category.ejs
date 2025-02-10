@@ -2,6 +2,72 @@
 
 <head>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10/dist/sweetalert2.min.css"/>
+  <style>
+    .col-md-3 {
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      margin: 10px;
+    }
+
+    .form-label {
+      margin-bottom: 8px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+
+    .d-grid {
+      margin-top: 20px;
+    }
+
+    .btn-primary {
+      background-color: #007bff;
+      color: #fff;
+      border: 1px solid #007bff;
+      border-radius: 5px;
+      padding: 10px 20px;
+      cursor: pointer;
+    }
+
+    .btn-primary:hover {
+      background-color: #0056b3;
+      border-color: #0056b3;
+    }
+
+    .pagination-container {
+      text-align: center;
+    }
+
+    .pagination {
+      display: inline-block;
+    }
+
+    .pagination a,
+    .pagination .current-page {
+      display: inline-block;
+      padding: 5px 10px;
+      margin: 0 2px;
+      border: 1px solid #ddd;
+      text-decoration: none;
+      color: #333;
+    }
+
+    .pagination a:hover {
+      background-color: #f5f5f5;
+    }
+
+    .error-message {
+      color: red;
+    }
+  </style>
+
 </head>
 
 <body>
@@ -23,19 +89,21 @@
       <div class="card-body">
         <div class="row">
           <div class="col-md-3">
-            <form method="post" action="/admin/addCategory" onsubmit="return handleFormSubmit(event)">
+            <form id="categoryForm" method="post" action="/admin/addCategory">
               <div class="mb-4">
                 <label class="form-label">Name</label>
-                <input type="text" name="name" placeholder="Type here" class="form-control"/>
-                <div id="name-error" class="error-message"></div>
+                <input type="text" id="name" name="name" placeholder="Type here" class="form-control"/>
+                <div id="name-error" class="error-message text-danger"></div>
               </div>
+            
               <div class="mb-4">
                 <label class="form-label">Description</label>
-                <textarea placeholder="Type here" name="description" class="form-control"></textarea>
-                <div id="description-error" class="error-message"></div>
+                <textarea id="description" name="description" placeholder="Type here" class="form-control"></textarea>
+                <div id="description-error" class="error-message text-danger"></div>
               </div>
+            
               <div class="d-grid">
-                <button class="btn btn-primary" type="submit">Create category</button>
+                <button class="btn btn-primary" type="submit">Create Category</button>
               </div>
             </form>
           </div>
@@ -55,10 +123,10 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <% cat.reverse().forEach((category) => { %>
+                  <% cat.reverse().forEach((category, index) => { %>
                   <tr>
-                    <td><%= category.name %></td>
-                    <td><%= category.description %></td>
+                    <td class="text-start"><%= category.name %></td>
+                    <td class="text-start"><%= category.description %></td>
                     <td>
                       <% if (category.categoryOffer) { %>
                         <%= category.categoryOffer %>%
@@ -91,8 +159,8 @@
                       </button>
                       <%}%>
                     </td>
-                    <td>
-                      <a href="#" class="btn btn-info">Edit</a>
+                    <td class="text-start">
+                      <a href="/admin/editCategory?id=<%=category._id%>" class="btn btn-info text-white">Edit</a>
                     </td>
                   </tr>
                   <% }) %>
@@ -128,6 +196,102 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 
   <script>
+
+document.getElementById("categoryForm").addEventListener("submit", async function(event) {
+    event.preventDefault(); // Prevent default form submission
+
+    // Get input values
+    const name = document.getElementById("name").value.trim();
+    const description = document.getElementById("description").value.trim();
+
+    // Clear previous error messages
+    document.getElementById("name-error").textContent = "";
+    document.getElementById("description-error").textContent = "";
+
+    let isValid = true;
+
+    // Validate name field
+    if (!name) {
+      document.getElementById("name-error").textContent = "Category name is required.";
+      isValid = false;
+    }
+
+    // Validate description field
+    if (!description) {
+      document.getElementById("description-error").textContent = "Description is required.";
+      isValid = false;
+    }
+
+    if (!isValid) return;
+
+    // Send data to backend
+    try {
+      const response = await fetch("/admin/addCategory", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, description }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "An error occurred");
+      }
+
+      // ✅ Success Alert
+      Swal.fire({
+        icon: "success",
+        title: "Success",
+        text: data.message || "Category added successfully!",
+      }).then(() => location.reload());
+
+    } catch (error) {
+      // ❌ Error Alert
+      Swal.fire({
+        icon: "error",
+        title: "Oops!",
+        text: error.message || "An error occurred while adding the category",
+      });
+    }
+});
+
+
+    function validateForm () {
+      clearErrorMessages();
+      const name = document.getElementsByName("name")[0].value.trim();
+      const description = document.getElementById("descriptionId").value.trim();
+      isValid = true;
+
+
+      if(name === "") {
+        displayErrorMessage('name-error', "Please enter a name");
+        isValid =false
+      }else if(!/^[a-zA-Z\s]+$/.test(name)) {
+        displayErrorMessage("name-error", "Category name should contain only alphabetic characters");
+        isValid =false;
+      }
+      if(description==="") {
+        displayErrorMessage("description-error", "Please enter a description");
+        isValid = false
+      }
+      return isValid;
+    }
+
+    function displayErrorMessage (elementId, message) {
+      var errroElement = document.getElementById(elementId);
+      errroElement.innerText = message;
+      errroElement.style.display = "block";
+    }
+
+    function clearErrorMessages () {
+      const errroElements = document.getElementsByClassName("error-message");
+      Array.from(errroElements).forEach((element) => {
+        element.innerText = "";
+        element.style.display = "none";
+      });
+    }
+
+
     async function addOffer(categoryId) {
       const { value: amount } = await Swal.fire({
         title: "Offer in percentage",
