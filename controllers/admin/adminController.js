@@ -1,7 +1,6 @@
 const User = require("../../models/userSchema");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
-const { readerrevenuesubscriptionlinking } = require("googleapis/build/src/apis/readerrevenuesubscriptionlinking");
 
 const pageerror = async (req, res) => {
     res.render("admin-error");
@@ -34,17 +33,18 @@ const login = async (req, res) => {
         }
     } catch (error) {
         console.error("Login error:", error);
-        return res.redirect("/pageerror");
+        return res.redirect("/admin/pageerror");
     }
 };
 
 const loadDashboard = async (req, res) => {
-    if (req.session.admin) {
-        try {
-            res.render("dashboard");
-        } catch (error) {
-            res.redirect("/pageerror");
-        }
+    if (!req.session.admin) {
+        return res.redirect("/admin/login");
+    }
+    try {
+        res.render("dashboard");
+    } catch (error) {
+        res.redirect("/admin/pageerror");
     }
 };
 
@@ -59,7 +59,7 @@ const logout = async (req, res) => {
         })
     } catch (error) {
         console.log("unexpected error during logout", error);
-        res.redirect("/pageerror");
+        res.redirect("/admin/pageerror");
     }
 }
 module.exports = {

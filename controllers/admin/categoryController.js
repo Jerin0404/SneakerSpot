@@ -156,7 +156,58 @@ const editCategory = async (req, res) => {
     } catch (error) {
         res.status(500).json({error:"Internal Server Error"});
     }
-}
+};
+
+const softDeleteCategory = async (req, res) => {
+    try {
+        const categoryId = req.params.id;
+
+        //find category
+        const category = await Category.findById(categoryId);
+        if(!category) {
+            return res.status(404).json({status: false, message: "Category not found"});
+        }
+        //Mark as deleted
+        category.isDeleted = true;
+        await category.save();
+
+        res.json({status: true, message: "Category soft deleted successfully"});
+    } catch (error) {
+        console.error("Error restoring category:", error);
+        res.status(500).json({status: false, message: "Internal server error"});
+    }
+};
+
+//Restore a soft-deleted category
+const restoreCategory = async (req, res) => {
+    try {
+        const categoryId = req.params.id;
+
+        const category = await Category.findById(categoryId);
+        if(!category) {
+            return res.status(404).json({status:false, message: "Category not found"});
+        }
+
+        category.isDeleted = false;
+        await category.save();
+
+        res.json({status: true, message: "Category restored successfully"});
+    } catch (error) {
+        console.error("Error restoring category:", error);
+        res.status(500).json({status: false, message: "Internal Server Error"});
+    }
+};
+
+
+const getCategories = async (req, res) => {
+    try {
+        const categories = await Category.find({isDeleted: false});
+        res.json({status: true, categories});
+    } catch (error) {
+        console.error("Error fetching categories:", error);
+        res.status(500).json({status: false, message: "Internal Server Error"});
+    }
+};
 
 
 module.exports = {
@@ -168,4 +219,7 @@ module.exports = {
     getUnlistCategory,
     getEditCategory,
     editCategory,
+    softDeleteCategory,
+    restoreCategory,
+    getCategories
 }

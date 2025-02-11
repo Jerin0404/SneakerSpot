@@ -4,6 +4,11 @@ const adminController = require("../controllers/admin/adminController");
 const {userAuth, adminAuth} = require("../middlewares/auth");
 const customerController = require("../controllers/admin/customerController");
 const categoryController = require("../controllers/admin/categoryController");
+const brandController = require("../controllers/admin/brandController");
+const multer = require("multer");
+const storage = require("../helpers/multer");
+const uploads = multer({storage:storage});
+
 
 router.get("/pageerror", adminController.pageerror);
 //Login Management
@@ -24,7 +29,11 @@ router.get("/listCategory", adminAuth, categoryController.getListCategory);
 router.get("/unlistCategory", adminAuth, categoryController.getUnlistCategory);
 router.get("/editCategory", adminAuth, categoryController.getEditCategory);
 router.post("/editCategory/:id", adminAuth,categoryController.editCategory);
-
+router.post("/category/delete/:id", categoryController.softDeleteCategory);
+router.post("/category/restore/:id", categoryController.restoreCategory);
+router.get("/categories", categoryController.getCategories);
+//Brand Management
+router.get("/brands", adminAuth,brandController.getBrandPage);
 
 
 
