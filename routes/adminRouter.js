@@ -34,6 +34,7 @@ router.post("/category/restore/:id", categoryController.restoreCategory);
 router.get("/categories", categoryController.getCategories);
 //Brand Management
 router.get("/brands", adminAuth,brandController.getBrandPage);
+router.post("/addBrand", adminAuth,uploads.single("image"), brandController.addBrand);
 
 
 

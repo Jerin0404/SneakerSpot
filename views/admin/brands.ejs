@@ -34,7 +34,7 @@
     <div class="card-body">
       <div class="row">
         <div class="col-md-3">
-          <form method="post" action="" enctype="">
+          <form method="post" action="/admin/addBrand" enctype="multipart/form-data">
             <div class="mb-4">
               <label for="product_name" class="form-label">Brand Name</label>
               <input
@@ -68,8 +68,9 @@
                 </tr>
               </thead>
               <tbody>
+                <%data.reverse().forEach((brand, index) => {%>
                 <tr>
-                  <td class="text-start"></td>
+                  <td class="text-start"><%=brand.brandName%></td>
                   <td class="text-start">
                     <div
                       class="d-flex align-items-center justify-content-center"
@@ -81,8 +82,8 @@
                       "
                     >
                       <img
-                        src=""
-                        alt=""
+                        src="/uploads/re-image/<%=brand.brandImage[0]%>"
+                        alt="<%=brand.brandName%>"
                         class="img-fluid rounded-circle"
                         style="width: 100%; height: auto"
                       />
@@ -119,6 +120,7 @@
                     </button>
                   </td>
                 </tr>
+                <%})%>
               </tbody>
             </table>
           </div>
