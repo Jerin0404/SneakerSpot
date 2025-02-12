@@ -9,6 +9,7 @@ const productConroller = require("../controllers/admin/productConroller");
 const multer = require("multer");
 const storage = require("../helpers/multer");
 const Product = require("../models/productSchema");
+const { admin } = require("googleapis/build/src/apis/admin");
 const uploads = multer({storage:storage});
 
 
@@ -46,5 +47,7 @@ router.post("/addProducts", adminAuth, uploads.array("images", 4), productConrol
 router.get("/products", adminAuth, productConroller.getAllProducts);
 router.post("/addProductOffer", adminAuth, productConroller.addProductOffer);
 router.post("/removeProductOffer", adminAuth, productConroller.removeProductOffer);
+router.get("/blockProduct", adminAuth, productConroller.blockProduct);
+router.get("/unblockProduct", adminAuth, productConroller.unblockProduct);
 
 module.exports = router;
