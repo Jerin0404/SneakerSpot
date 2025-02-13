@@ -94,9 +94,8 @@
             cursor: pointer;
             font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
             .google-btn {
-    text-decoration: none; /* Removes the underline */
-    /* other styles */
-}
+                text-decoration: none; /* Removes the underline */
+            }
 
         }
 
@@ -139,8 +138,10 @@
             <% } %>
             <button type="submit" class="login-btn">Login</button><br><br>
             <a href="/auth/google" class="google-btn">Sign in with Google</a>
-
-            <a href="/forgot-password" class="forgot-password">Forgot Password?</a>
+            <div class="form-group d-flex justify-content-end">
+                <a href="/forgot-password" class="forgot-password">Forgot Password?</a>
+            </div>
+            
         </form>
     </div>
 </body>

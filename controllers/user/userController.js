@@ -1,17 +1,48 @@
 const User = require("../../models/userSchema");
+const Category = require("../../models/categorySchema");
+const Product = require("../../models/productSchema");
+const Banner = require("../../models/bannerSchema");
 const env = require("dotenv").config();
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
 
 const loadHomepage = async (req, res) => {
     try {
-        const user = req.session.user;
-        if (user) {
-            const userData = await User.findOne({ _id: user._id });
-            res.render("home", { user: userData });  // Pass userData to template
-        } else {
-            res.render("home", { user: null });  // Ensure user is always defined
+        const today = new Date().toISOString();
+        const findBanner = await Banner.find({
+            startDate:{$lt:new Date(today)},
+            endDate:{$gt:new Date(today)},
+        })
+        let userData = null;
+        if(req.user) {
+            userData = req.user;
+        }else if (req.session.user) {
+            userData = await User.findOne({_id:req.session.user});
         }
+
+        // const user = req.session.user;
+        const categories = await Category.find({isListed:true});
+        let productData = await Product.find (
+            {isBlocked:false,
+                category:{$in:categories.map(category => category._id)}, quantity:{$gt:0}
+            }
+
+        )
+
+        productData.sort((a,b) => new Date(b.createdOn)-new Date(a.createdOn));
+        productData = productData.slice(0, 4);
+
+        res.render("home", {
+            user: userData,
+            products: productData,
+            banner: findBanner || []
+        })
+        // if (user) {
+        //     const userData = await User.findOne({ _id: user._id });
+        //     res.render("home", { user: userData, products: productData });  // Pass userData to template
+        // } else {
+        //     res.render("home", { user: null , products:productData});  // Ensure user is always defined
+        // }
     } catch (error) {
         console.log("Home page not loading", error);
         res.status(500).send("Server Error");
