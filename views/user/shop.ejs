@@ -1,0 +1,276 @@
+<%- include("../../views/partials/user/header") %>
+<style>
+ .main-container {
+   max-width: 1200px;
+   margin: 0 auto;
+   padding: 20px;
+   font-family: Arial, sans-serif;
+ }
+
+ .shop-topbar {
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   margin-bottom: 20px;
+ }
+
+ .search-form {
+   display: flex;
+   align-items: center;
+   background-color: #fff;
+   border-radius: 25px;
+   overflow: hidden;
+   max-width: 300px;
+   border: 1px solid #ddd;
+ }
+
+ .search-input {
+   flex: 1;
+   padding: 10px;
+   font-size: 14px;
+   border: none;
+   outline: none;
+ }
+
+ .search-button {
+   padding: 10px 15px;
+   background-color: #007bff;
+   color: #fff;
+   border: none;
+   cursor: pointer;
+   font-size: 14px;
+   transition: background-color 0.3s;
+ }
+
+ .search-button:hover {
+   background-color: #0056b3;
+ }
+
+ .product-list-container {
+   display: flex;
+   gap: 20px;
+ }
+
+ .sidebar {
+    width: 250px;
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    font-family: 'Arial', sans-serif;
+  }
+.filter-section {
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .filter-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+  }
+
+ .filter-item a {
+   text-decoration: none;
+   color: #333;
+   font-size: 14px;
+ }
+
+  .category-brand-container ul,
+  .filter-section ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .filter-item a {
+    text-decoration: none;
+    color: #555;
+    font-size: 16px;
+    display: block;
+    padding: 8px 12px;
+    transition: all 0.3s ease-in-out;
+    border-radius: 5px;
+  }
+
+  .filter-item a:hover {
+    background: #007bff;
+    color: #fff;
+  }
+
+  .price-button {
+    display: block;
+    text-decoration: none;
+    color: #007bff;
+    font-weight: bold;
+    padding: 8px 12px;
+    background: #e9ecef;
+    border-radius: 5px;
+    text-align: center;
+    transition: 0.3s ease-in-out;
+  }
+
+  .price-button:hover {
+    background: #007bff;
+    color: white;
+  }
+
+ .product-grid {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 20px;
+   width: calc(100% - 270px);
+ }
+
+ .product-card {
+   width: calc(33.333% - 20px);
+   border: 1px solid #ddd;
+   padding: 15px;
+   border-radius: 8px;
+   text-align: center;
+   background: #fff;
+   transition: transform 0.3s;
+ }
+
+ .product-card:hover {
+   transform: scale(1.03);
+ }
+
+ .product-card img {
+   max-width: 100%;
+   border-radius: 5px;
+ }
+
+ .wishlist-btn {
+   position: absolute;
+   top: 10px;
+   right: 10px;
+   background-color: rgba(237, 247, 247, 0.8);
+   padding: 8px;
+   border-radius: 50%;
+   cursor: pointer;
+ }
+
+ .add-to-cart-btn {
+   background-color: #28a745;
+   color: #fff;
+   padding: 10px;
+   border: none;
+   border-radius: 5px;
+   cursor: pointer;
+   width: 100%;
+   margin-top: 10px;
+ }
+
+ .add-to-cart-btn:hover {
+   background-color: #218838;
+ }
+
+ .pagination {
+   display: flex;
+   justify-content: center;
+   gap: 10px;
+   margin: 20px 0;
+ }
+
+ .pagination a {
+   padding: 8px 12px;
+   background-color: #f0f0f0;
+   border: 1px solid #ddd;
+   text-decoration: none;
+ }
+
+ .pagination .active {
+   background-color: #007bff;
+   color: #fff;
+ }
+</style>
+
+<div class="main-container">
+ <section class="shop-page">
+   <div class="shop-topbar">
+     <form action="" method="POST" class="search-form">
+       <input type="text" name="query" placeholder="Search items..." class="search-input" />
+       <button type="submit" class="search-button">Search</button>
+     </form>
+   </div>
+   
+   <div class="product-list-container">
+     <aside class="sidebar">
+       <div class="filter-section">
+         <div class="filter-title">Categories</div>
+            <div class="category-brand-container">
+                <ul>
+                  <% if (categories && categories.length > 0) { %>
+                    <% for (let i = 0; i < categories.length; i++) { %>
+                        <li class="filter-item">
+                            <a href="/filter?category=<%= categories[i]._id %>">
+                                <%= categories[i].name %>
+                            </a>
+                        </li>
+                    <% } %>
+                <% } else { %>
+                    <li>No categories available</li>
+                <% } %>
+                </ul>
+            </div>
+       </div>
+       <div class="filter-section">
+         <div class="filter-title">Brands</div>
+         <ul>
+            <%for(let i = 0; i < brands.length; i++){%>
+                <li class="filter-item">
+                    <a href="/filter?brands=<%=brands[i]._id%>"><%=brands[i].brandName%></a>
+                </li>
+           <%}%>
+         </ul>
+       </div>
+       <div class="filter-section">
+         <div class="filter-title">Filter by Price</div>
+         <ul>
+           <li><a href="/filterPrice?gt=0&lt=500" class="price-button">Under ₹500</a></li>
+           <li><a href="/filterPrice?gt=500&lt=1000" class="price-button">₹500 - ₹1000</a></li>
+           <li><a href="/filterPrice?gt=1000&lt=1500" class="price-button">₹1000 - ₹1500</a></li>
+           <li><a href="/filterPrice?gt=1500&lt=100000" class="price-button">Above ₹1500</a></li>
+         </ul>
+       </div>
+     </aside>
+
+     <main class="product-grid">
+        <%for(let i = 0; i < products.length; i++){%>
+       <div class="product-card">
+         <span class="wishlist-btn" onclick="">❤️</span>
+         <a href="#">
+           <img src="/uploads/re-image/<%=products[i].productImage[0]%>" alt="<%=products[i].productName%>" />
+           <h4><%=products[i].productName%></h4>
+           <p>Brand:<%=products[i].brand%></p>
+           <p>Price:₹<%=products[i].salePrice.toLocaleString('en-IN')%><span class="text-muted"><strike>₹<%=products[i].regularPrice.toLocaleString('en-IN')%></strike></span></p>
+         </a>
+         <button class="add-to-cart-btn" onclick="">Add to Cart</button>
+       </div>
+       <%}%>
+     </main>
+   </div>
+   <div class="pagination">
+    <% if (currentPage > 1) { %>
+      <a class="btn" href="/shop?page=<%= currentPage - 1 %>">Prev</a>
+    <% } %>
+
+
+    <% for (let i = 1; i <= totalPages; i++) { %>
+      <a class="btn <%= currentPage === i ? 'active' : '' %>" href="/shop?page=<%= i %>"><%= i %></a>
+    <% } %>
+
+
+    <% if (currentPage < totalPages) { %>
+      <a class="btn" href="/shop?page=<%= currentPage + 1 %>">Next</a>
+    <% } %>
+  </div>
+
+
+ </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+<%- include("../../views/partials/user/footer") %>

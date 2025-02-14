@@ -6,7 +6,6 @@ const customerController = require("../controllers/admin/customerController");
 const categoryController = require("../controllers/admin/categoryController");
 const brandController = require("../controllers/admin/brandController");
 const productConroller = require("../controllers/admin/productConroller");
-const bannerContrller = require("../controllers/admin/bannerController");
 const multer = require("multer");
 const storage = require("../helpers/multer");
 const Product = require("../models/productSchema");
@@ -53,10 +52,4 @@ router.get("/unblockProduct", adminAuth, productConroller.unblockProduct);
 router.get("/editProduct", adminAuth, productConroller.getEditProduct);
 router.post("/editProduct/:id", adminAuth, uploads.array("images", 4), productConroller.editProduct);
 router.post("/deleteImage", adminAuth, productConroller.deleteSingleImage);
-
-//Banner Management
-router.get("/banner", adminAuth, bannerContrller.getBannerPage);
-router.get("/addBanner", adminAuth, bannerContrller.getAddBannerPage);
-router.post("/addBanner", adminAuth, uploads.single("images"), bannerContrller.AddBanner);
-router.get("/deleteBanner", adminAuth, bannerContrller.deleteBanner);
 module.exports = router;

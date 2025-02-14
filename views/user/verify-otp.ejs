@@ -200,34 +200,43 @@
         return false;
     }
 
-    function resendOTP () {
-        clearInterval(timerInterval);
-        timer=60;
-        document.getElementById("otp").disabled=false;
-        document.getElementById("timervalue").classList.remove("expired");
-        startTimer();
-        $.ajax({
-            type:"POST",
-            url:"/resend-otp",
-            success: function (response) {
-                if(response.success) {
-                    Swal.fire({
-                        icon:"success",
-                        title:"OTP Resend Successfully",
-                        showConfirmButton:false,
-                        timer:1500,
-                    })
-                }else {
-                    Swal.fire({
-                        icon:"error",
-                        title:"Error",
-                        text:"An error occured while resending OTP. Please try again",
-                    })
-                }
+    function resendOTP() {
+    clearInterval(timerInterval);
+    timer = 60;
+    document.getElementById("otp").disabled = false;
+    document.getElementById("timerValue").classList.remove("expired");  // Fixed capitalization
+    document.getElementById("timerValue").textContent = timer;  // Added this line to update display
+    startTimer();
+
+    $.ajax({
+        type: "POST",
+        url: "/resend-otp",  // Verify this matches your server route
+        success: function(response) {
+            if(response.success) {
+                Swal.fire({
+                    icon: "success",
+                    title: "OTP Resent Successfully",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: "An error occurred while resending OTP. Please try again"
+                });
             }
-        })
-        return false;
-    }
+        },
+        error: function(xhr, status, error) {  // Added error handling
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "Failed to resend OTP. Please try again later."
+            });
+        }
+    });
+    return false;
+}
 
 </script>
 <%- include("../../views/partials/user/footer") %>

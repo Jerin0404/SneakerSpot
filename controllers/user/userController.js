@@ -1,7 +1,8 @@
 const User = require("../../models/userSchema");
 const Category = require("../../models/categorySchema");
 const Product = require("../../models/productSchema");
-const Banner = require("../../models/bannerSchema");
+const Brand = require("../../models/brandSchema");
+const Banner = require("../../models/bannerSchema")
 const env = require("dotenv").config();
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
@@ -20,7 +21,6 @@ const loadHomepage = async (req, res) => {
             userData = await User.findOne({_id:req.session.user});
         }
 
-        // const user = req.session.user;
         const categories = await Category.find({isListed:true});
         let productData = await Product.find (
             {isBlocked:false,
@@ -171,6 +171,7 @@ const verifyOtp = async (req, res) => {
 const resendOtp = async (req, res) => {
     try {
         const {email} = req.session.userData;
+        console.log(email)
         if(!email) {
             return res.status(400).json({success:false, message:"Email not found in session"})
         }
@@ -221,7 +222,6 @@ const login = async (req, res) => {
             return res.render("login", { message: "Incorrect Password" });
         }
 
-        //Store user in session
         req.session.user = { _id: findUser._id, name: findUser.name };
         console.log("User logged in:", req.session.user);
 
@@ -242,7 +242,7 @@ const logout = async (req, res) => {
                 console.log("Session destruction error:", err.message);
                 return res.redirect("/pageNotFound");
             }
-            console.log("User logged out"); // Debugging
+            console.log("User logged out");
             return res.redirect("/login");
         });
     } catch (error) {
@@ -251,6 +251,122 @@ const logout = async (req, res) => {
     }
 };
 
+const loadShoppingPage = async (req, res) => {
+    try {
+        const user = req.session.user;
+        const userData = await User.findOne({_id:user});
+        const categories = await Category.find({isListed:true});
+        const categoryIds = categories.map((category) => category._id.toString());
+        const page = parseInt(req.query.page) || 1;
+        const limit = 9;
+        const skip = (page-1) * limit;
+        const products = await Product.find({
+            isBlocked:false,
+            category:{$in:categoryIds},
+            quantity:{$gt:0},
+        }).sort({createdOn:-1}).skip(skip).limit(limit);
+        const totalProducts = await Product.countDocuments({
+            isBlocked:false,
+            category:{$in:categoryIds},
+            quantity: {$gt:0}
+        });
+        const totalPages = Math.ceil(totalProducts/limit);
+
+        const brands = await Brand.find({isBlocked:false});
+        const categoriesWithIds = categories.map(category => ({_id:category._id, name:category.name}));
+
+        res.render("shop", {
+            user:userData,
+            products:products,
+            category:categoriesWithIds,
+            brand: brands,
+            totalProducts: totalProducts,
+            currentPage: page,
+            totalPages:totalPages
+        })
+
+    } catch (error) {
+        res.redirect("/pageNotFound")
+    }
+}
+
+const filterProduct = async (req, res) => { 
+    try {
+        let findProducts = await Product.find(query).lean();
+    findProducts.sort((a,b) => new Date (b.createdOn) - new Date(a.createdOn));
+    const categories = await Category.find({isListed:true});
+
+    let itemsPerPage = 6;
+
+    let currentPage = parseInt(req.query.page) || 1;
+    let startIndex = (currentPage - 1) * itemsPerPage;
+    let endIndex = Math.ceil(findProducts.length/itemsPerPage);
+    const currentProduct = findProducts.slice(startIndex, endIndex);
+    let userData = null;
+
+    if(user) {
+        userData = await User.findOne({_id:user});
+        if(userData) {
+            const searchEntry = {
+                category: findCategory ? findCategory._id:null,
+                brand: findBrand ? findBrand.brandName: null,
+                searchedOn: new Date(),
+            }
+            userData.searchHistory.push(searchEntry);
+            await userData.save();
+        }
+    }
+        res.session.filteredProducts = currentProduct;
+        res.render('shop', {
+            products:currentProduct,
+            category: categories,
+            brand: brands,
+            totalPages,
+            currentPage,
+            selectedCategory: category || null,
+            selectedBrand: brand || null
+        })
+    } catch (error) {
+        res.redirect('/pageNotFound');
+    }
+    
+}
+
+const filterByPrice = async (req, res) => {
+    try {
+        const user = req.session.user;
+        const userData = await User.findOne({_id:user});
+        const brands = await Brand.find({}).lean();
+        const categories = await Category.find({isListed:true}).lean();
+
+        let findProducts = await Product.find({
+            salePrice: {$gt:req.query.gt, $lt:req.query.lt},
+            isBlocked: false,
+            quantity: {$gt: 0}
+        }).lean();
+
+        findProducts.sort((a,b) => new Date(b.createdOn) - new Date(a.createdOn));
+        let itemsPerPage = 6;
+        let currentPage = parseInt(req.query.page) || 1;
+        let startIndex = (currentPage - 1) * itemsPerPage;
+        let endIndex = startIndex + itemsPerPage;
+        let totalPages = Math.ceil(findProducts.length/itemsPerPage);
+        const currentProduct = findProducts.slice(startIndex, endIndex);
+        req.session.filteredProducts = findProducts;
+
+        res.render("shop", {
+            user: userData,
+            products: currentProduct,
+            categories: categories,
+            brands: brands,
+            totalPages,
+            currentPage,
+        })
+    } catch (error) {
+        console.log(error);
+        res.redirect("/pageNotFound");
+    }
+}
 
 module.exports = {
     loadHomepage,
@@ -261,5 +377,8 @@ module.exports = {
     verifyOtp,
     resendOtp,
     login,
-    logout
+    logout,
+    loadShoppingPage,
+    filterProduct,
+    filterByPrice,
 }

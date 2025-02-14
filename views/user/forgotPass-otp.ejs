@@ -130,6 +130,7 @@
 
   function validateOtpForm() {
     const otpInput = document.getElementById('otp').value;
+    console.log("otpInput", otpInput);
     $.ajax({
       type: 'POST',
       url:'/verify-passForgot-otp',
@@ -137,6 +138,7 @@
       data:JSON.stringify({otp:otpInput}),
       success:function(response) {
         if(response.success) {
+          console.log("sanu");
           Swal.fire({
             icon:'success',
             title:'OTP Verified Successfully',

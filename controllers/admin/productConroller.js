@@ -40,7 +40,7 @@ const addProducts = async (req, res) => {
             if (req.files && req.files.length > 0) {
                 for (let i = 0; i < req.files.length; i++) {
                     const originalImagePath = req.files[i].path;
-                    // Use the correct directory and filename
+                    
                     const resizedImagePath = path.join(imageUploadDir, req.files[i].filename);
                     await sharp(originalImagePath)
                         .resize({ width: 440, height: 440 })
@@ -185,6 +185,7 @@ const getEditProduct = async (req, res) => {
     try {
         const id = req.query.id;
         const product = await Product.findOne({_id:id});
+        console.log(product)
         const category = await Category.find({});
         const brand = await Brand.find({});
         res.render("edit-product", {
@@ -233,8 +234,9 @@ const editProduct = async (req, res) => {
         if(req.files.length > 0) {
             updateFields.$push = {productImage:{$each:images}};
         }
+        console.log("update",updateFields);
 
-        await Product.findByIdAndUpdate(id.updateFields, {new: true});
+        await Product.findByIdAndUpdate(id,updateFields, {new: true});
         res.redirect("/admin/products");
     } catch (error) {
         console.error(error);
@@ -244,20 +246,46 @@ const editProduct = async (req, res) => {
 
 const deleteSingleImage = async (req, res) => {
     try {
-        const {imageNameToServer,productIdToServer} = req.body;
-        const product = await Product.findByIdAndUpdate(productIdToServer, {$pull:{productImage:imageNameToServer}});
-        const imagePath = path.join("public", "uploads", "re-image", imageNameToServer);
-        if(fs.existsSync(imagePath)) {
-            await fs.unlinkSync(imagePath);
-            console.log(`Image ${imageNameToServer} deleted successfully`);
-        }else {
+        const { imageNameToServer, productIdToServer } = req.body;
+
+        // Validate input
+        if (!imageNameToServer || !productIdToServer) {
+            return res.status(400).send({ status: false, message: "Missing parameters" });
+        }
+
+        // Remove image from product document
+        const product = await Product.findByIdAndUpdate(
+            productIdToServer, 
+            { $pull: { productImage: imageNameToServer } },
+            { new: true }
+        );
+
+        if (!product) {
+            return res.status(404).send({ status: false, message: "Product not found" });
+        }
+
+        // Delete file from filesystem
+        const imagePath = path.join(__dirname, "../public/uploads/re-image", imageNameToServer);
+        
+        if (fs.existsSync(imagePath)) {
+            fs.unlink(imagePath, (err) => {
+                if (err) {
+                    console.error("Error deleting file:", err);
+                    return res.status(500).send({ status: false, message: "Error deleting image file" });
+                }
+                console.log(`Image ${imageNameToServer} deleted successfully`);
+            });
+        } else {
             console.log(`Image ${imageNameToServer} not found`);
         }
-        res.send({status:true});
+
+        res.send({ status: true, message: "Image deleted successfully" });
+
     } catch (error) {
-        res.redirect("/admin/pageerror")
+        console.error("Error:", error);
+        res.redirect("/admin/pageerror");
     }
-}
+};
 
 module.exports = {
     getProductAddPage,
