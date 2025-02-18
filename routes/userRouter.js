@@ -5,7 +5,7 @@ const passport = require("passport");
 const profileController = require("../controllers/user/profileController");
 const { userAuth } = require("../middlewares/auth");
 const wishlistController = require("../controllers/user/wishlistController");
-
+const addressController = require("../controllers/user/addressController");
 //Error Management
 router.get("/pageNotFound", userController.pageNotFound);
 
@@ -57,5 +57,13 @@ router.get("/filterPrice", userAuth, userController.filterByPrice);
 
 //wishList Management
 router.get("/wishlist", userAuth, wishlistController.loadWishlist);
+
+//Address Management
+router.get("/manageAddress", addressController.getAddressPage);
+router.get("/addAddress", userAuth, profileController.addAddress);
+router.post("/addAddress", userAuth, profileController.postAddAddress);
+router.get("/editAddress", userAuth, profileController.editAddress);
+router.post("/editAddress", userAuth, profileController.postEditAddress);
+router.get("/deleteAddress", userAuth, profileController.deleteAddress);
 
 module.exports = router

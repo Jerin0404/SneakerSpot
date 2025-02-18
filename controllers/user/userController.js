@@ -235,36 +235,34 @@ const loadLogin = async (req, res) => {
 
 const login = async (req, res) => {
     try {
-        console.log(req.body);
-
         const { email, password } = req.body;
-        const findUser = await User.findOne({ isAdmin: 0, email: email });
+        const findUser = await User.findOne({ isAdmin: 0, email });
 
         if (!findUser) {
             return res.render("login", { message: "User not found" });
         }
-
         if (findUser.isBlocked) {
-            req.session.destroy();
             return res.render("login", { message: "User is blocked by admin" });
         }
 
         const passwordMatch = await bcrypt.compare(password, findUser.password);
+
         if (!passwordMatch) {
             return res.render("login", { message: "Incorrect Password" });
         }
 
-
-        req.session.user = { id: findUser._id, name: findUser.name };
-        console.log("User logged in:", req.session.user);
+        req.session.user = {
+            id: findUser._id,
+            name: findUser.name
+        };
 
         res.redirect("/");
-
     } catch (error) {
         console.error("Login error", error);
         res.render("login", { message: "Login failed. Please try again later" });
     }
 };
+
 
 
 const logout = async (req, res) => {
@@ -432,6 +430,7 @@ const filterByPrice = async (req, res) => {
     }
 }
 
+
 module.exports = {
     loadHomepage,
     pageNotFound,
@@ -445,4 +444,5 @@ module.exports = {
     loadShoppingPage,
     filterProduct,
     filterByPrice,
+
 }

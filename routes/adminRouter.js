@@ -50,6 +50,8 @@ router.post("/removeProductOffer", adminAuth, productConroller.removeProductOffe
 router.get("/blockProduct", adminAuth, productConroller.blockProduct);
 router.get("/unblockProduct", adminAuth, productConroller.unblockProduct);
 router.get("/editProduct", adminAuth, productConroller.getEditProduct);
-router.post("/editProduct/:id", adminAuth, uploads.array("images", 4), productConroller.editProduct);
+router.post("/editProduct/:id", adminAuth, uploads.array("images", 3), productConroller.editProduct);
 router.post("/deleteImage", adminAuth, productConroller.deleteSingleImage);
+
+
 module.exports = router;

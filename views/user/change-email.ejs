@@ -1,22 +1,88 @@
 <%- include("../../views/partials/user/header") %>
 <section class="content-main mt-80 mb-80">
-   <div class="card mx-auto card-login col-4">
-       <div class="card-body">
-           <h4 class="card-title mb-4">Enter Current Email</h4>
-           <form method="post" action="/change-email" onsubmit="return validateLoginForm()">
-               <div class="mb-3">
-                   <input class="form-control" name="email" placeholder="Email" type="text" id="email">
-                   <div class="error-message" id="email-error"></div>
-               </div>
-               <div class="mb-4">
-                   <button type="submit" class="btn btn-primary w-100">Verify</button>
-               </div>
-           </form>
-         
-         
-       </div>
-   </div>
+    <div class="container d-flex justify-content-center">
+        <div class="card card-login col-12 col-md-6 col-lg-4">
+            <div class="card-body">
+                <h4 class="card-title mb-4 text-center">Enter Current Email</h4>
+                <form method="post" action="/change-email" onsubmit="return validateLoginForm()">
+                    <div class="mb-3">
+                        <input class="form-control" name="email" placeholder="Email" type="text" id="email">
+                        <div class="error-message" id="email-error"></div>
+                    </div>
+                    <div class="mb-4">
+                        <button type="submit" class="btn btn-primary w-100">Verify</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </section>
+
+<style>
+    .content-main {
+        padding-top: 80px;
+        padding-bottom: 80px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .card-login {
+        max-width: 100%;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+        padding: 30px;
+    }
+
+    .card-body {
+        padding: 20px;
+    }
+
+    .card-title {
+        font-size: 22px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .form-control {
+        border-radius: 8px;
+        padding: 12px;
+        font-size: 16px;
+    }
+
+    .btn-primary {
+        border-radius: 8px;
+        padding: 12px;
+        font-size: 16px;
+        background-color: #007bff;
+        border: none;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+
+    /* Error message style */
+    .error-message {
+        color: red;
+        font-size: 12px;
+        margin-top: 5px;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .card-login {
+            padding: 20px;
+            max-width: 90%;
+        }
+
+        .card-title {
+            font-size: 18px;
+        }
+    }
+</style>
+
 <script>
    function validateLoginForm() {
        const emailInput = document.getElementById('email');
@@ -40,4 +106,4 @@
        }
    }
 </script>
-<%- include("../../views/partials/user/footer") %>
+
