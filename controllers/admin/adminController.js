@@ -10,8 +10,8 @@ const loadLogin = (req, res) => {
     if (req.session.admin) {
         return res.redirect(302, "/admin/dashboard");
     }
-    const message = req.session.message; // Retrieve the message
-    req.session.message = null; // Clear it after reading
+    const message = req.session.message;
+    req.session.message = null;
     res.render("admin-login", { message });
 };
 
@@ -21,18 +21,18 @@ const login = async (req, res) => {
         const admin = await User.findOne({ email, isAdmin: true });
 
         if (admin) {
-            const passwordMatch = await bcrypt.compare(password, admin.password);
+            const passwordMatch =  bcrypt.compare(password, admin.password);
 
             if (passwordMatch) {
                 req.session.admin = true;
-                req.session.user = null; // Ensure regular user session is cleared if exists
-                return res.redirect(302, "/admin"); // Corrected syntax
+                req.session.user = null;
+                return res.redirect(302, "/admin");
             } else {
-                req.session.message = "Incorrect password"; // Store message
-                return res.redirect(302, "/admin/login"); // Redirect without passing an object
+                req.session.message = "Incorrect password";
+                return res.redirect(302, "/admin/login");
             }
         } else {
-            req.session.message = "Admin not found"; // Store message
+            req.session.message = "Admin not found";
             return res.redirect(302, "/admin/login");
         }
     } catch (error) {

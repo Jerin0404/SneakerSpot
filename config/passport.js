@@ -13,7 +13,7 @@ passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: process.env.GOOGLE_CALLBACK_URL,
-    passReqToCallback: true, // Pass request object (optional)
+    passReqToCallback: true,
     scope: ["profile", "email"]
 }, 
 async (req, accessToken, refreshToken, profile, done) => {

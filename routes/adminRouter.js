@@ -43,7 +43,7 @@ router.get("/unBlockBrand", adminAuth, brandController.unBlockBrand);
 router.get("/deleteBrand", adminAuth, brandController.deleteBrand);
 //Product Management
 router.get("/addProducts", adminAuth, productConroller.getProductAddPage);
-router.post("/addProducts", adminAuth, uploads.array("images", 4), productConroller.addProducts);
+router.post("/addProducts", adminAuth, uploads.array("images", 3), productConroller.addProducts);
 router.get("/products", adminAuth, productConroller.getAllProducts);
 router.post("/addProductOffer", adminAuth, productConroller.addProductOffer);
 router.post("/removeProductOffer", adminAuth, productConroller.removeProductOffer);

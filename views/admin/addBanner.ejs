@@ -328,7 +328,7 @@ if (File===undefined) {
 
 
        function viewImage(event, index) {
-    let input = event.target; // Get the input element
+    let input = event.target;
     if (input.files && input.files[0]) {
         let reader = new FileReader();
 
@@ -341,9 +341,8 @@ if (File===undefined) {
                 return;
             }
 
-            image.src = dataURL; // Set the image source
+            image.src = dataURL;
 
-            // Wait for image to load before initializing Cropper
             image.onload = function () {
                 let cropper = new Cropper(image, {
                     aspectRatio: 1360 / 777,

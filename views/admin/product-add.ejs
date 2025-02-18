@@ -91,13 +91,13 @@
                                    </div>
                                    <div id="color-error" class="error-message"></div>
                                 </div>
-                                <!-- <div class="col-lg-4">
+                                <div class="col-lg-4">
                                     <div class="mb-4">
                                         <label class="form-label">Size</label>
                                         <input name="size" type="text" class="form-control border" placeholder="Enter sizes (e.g., 6,7,8)">
                                     </div>
                                     <div id="size-error" class="error-message"></div>
-                                </div> -->
+                                </div>
                            </div>
                            <div class="card mb-4">
                                <div class="card-body">
@@ -174,23 +174,7 @@
                                                                    <button type="button" id="saveButton3" class="btn-sm btn-primary">Save</button>
                                                                </div>
                                                            </div>
-                                                          
-                                                           <div class="row">
-                                                               <div class="card-body align-items-center" style="margin-bottom: 20px;">
-                                                                   <img src="" alt="" id="imgView4">
-
-
-                                                          
-                                                                   <input class="form-control" type="file" name="images" id="input4"
-                                                                       accept="image/png, image/jpeg, image/jpg"
-                                                                       onchange="viewImage4(event),viewImage(event, 4)">
-                                                            </div>
-                                                            <div class="image-cropper d-flex align-items-center"
-                                                        style="display:none; width: 300px; height: 200px; margin-bottom: 20px;">
-                                                    <img src="" id="croppedImg4" alt="">
-                                                <button type="button" id="saveButton4" class="btn-sm btn-primary">Save</button>
-                                            </div>
-                                        </div>
+                                    </div>
                                 </div>
                             </div>
                            <div>
@@ -315,7 +299,7 @@ function validateForm() {
     const price = document.getElementsByName('regularPrice')[0].value;
     const saleprice = document.getElementsByName('salePrice')[0].value;
     const color = document.getElementsByName('color')[0].value;
-    const size = document.getElementsByName('size')[0].value;
+    // const size = document.getElementsByName('size')[0].value;
     const category = document.getElementsByName('category')[0].value;
     const images = document.getElementById('input1');
     const quantity = document.getElementsByName('quantity')[0].value;
@@ -361,13 +345,13 @@ function validateForm() {
         displayErrorMessage('color-error', 'Please enter a color.');
         isValid = false;
     }
-    if (size.trim() === "") {
-        displayErrorMessage('size-error', 'Please enter at least one size.');
-        isValid = false;
-    } else if (!/^\d+(,\d+)*$/.test(size.trim())) {
-        displayErrorMessage('size-error', 'Sizes must be numbers separated by commas (e.g., 6,7,8).');
-        isValid = false;
-    }
+    // if (size.trim() === "") {
+    //     displayErrorMessage('size-error', 'Please enter at least one size.');
+    //     isValid = false;
+    // } else if (!/^\d+(,\d+)*$/.test(size.trim())) {
+    //     displayErrorMessage('size-error', 'Sizes must be numbers separated by commas (e.g., 6,7,8).');
+    //     isValid = false;
+    // }
     if (images.files.length === 0) {
         displayErrorMessage("images-error", 'Please select an image.');
         isValid = false;
