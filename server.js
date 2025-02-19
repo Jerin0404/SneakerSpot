@@ -23,6 +23,11 @@ app.use(session({
     }
 }))
 
+app.get("/test-session", (req, res) => {
+    console.log("session Data:", req.session);
+    res.send(req.session);
+})
+
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -36,12 +41,7 @@ app.use((req, res, next) => {
 //     next();
 // });
 
-//Pending.......404 error........
-// Catch 404 and forward to error handler
-// app.use(function (req, res, next) {
-//     res.render('/pageNotFound')
-//     next(createError(404));
-//   });
+
 
 app.set("view engine", "ejs");
 app.set("views", [path.join(__dirname, "views/user"), path.join(__dirname, "views/admin")]);

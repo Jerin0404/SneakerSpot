@@ -1,21 +1,18 @@
 const User = require("../models/userSchema");
 
 const userAuth = (req, res, next) => {
-    console.log(req.session.user);
-    
+    console.log("session data in userAuth", req.session);   
     if (req.session.user) {
-        // Ensure we extract only the ID
         const userId = req.session.user.id || req.session.user; 
         
         if (!userId || userId.length !== 24) {
-            console.error("Invalid user ID:", userId);
             return res.redirect("/login");
         }
 
         User.findById(userId)
             .then(data => {
                 if (data && !data.isBlocked) {
-                    next(); // Proceed to the next middleware
+                    next();
                 } else {
                     res.redirect("/login");
                 }
@@ -28,7 +25,6 @@ const userAuth = (req, res, next) => {
         res.redirect("/login");
     }
 };
-// <-- Missing closing bracket added
 
 const adminAuth = (req, res, next) => {
     User.findOne({isAdmin:true})

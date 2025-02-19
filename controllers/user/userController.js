@@ -2,7 +2,7 @@ const User = require("../../models/userSchema");
 const Category = require("../../models/categorySchema");
 const Product = require("../../models/productSchema");
 const Brand = require("../../models/brandSchema");
-const Banner = require("../../models/bannerSchema")
+const Banner = require("../../models/bannerSchema");
 const env = require("dotenv").config();
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
@@ -340,8 +340,14 @@ const filterProduct = async (req, res) => {
         if (req.query.category) {
             query.category = req.query.category;
         }
+
         if (req.query.brand) {
-            query.brand = req.query.brand;
+            const findBrand = await Brand.findOne({ brandName: req.query.brand });
+            if (findBrand) {
+                query.brand = findBrand.brandName;
+            }else {
+                console.log("Brand not found in database");
+            }
         }
 
         let findProducts = await Product.find(query).lean();
@@ -357,34 +363,16 @@ const filterProduct = async (req, res) => {
 
         const currentProduct = findProducts.slice(startIndex, endIndex);
 
-        let userData = null;
-        if (req.user) {
-            userData = await User.findById(req.user._id);
-            if (userData) {
-                const findCategory = categories.find(c => c._id.toString() === req.query.category);
-                const findBrand = await Brand.findOne({ brandName: req.query.brand });
-
-                const searchEntry = {
-                    category: findCategory ? findCategory._id : null,
-                    brand: findBrand ? findBrand.brandName : null,
-                    searchedOn: new Date(),
-                };
-
-                userData.searchHistory.push(searchEntry);
-                await userData.save();
-            }
-        }
-
         req.session.filteredProducts = currentProduct;
 
         res.render('shop', {
             products: currentProduct,
             category: categories,
-            brand: req.query.brand || null,
+            brand: req.query.brand,
             totalPages,
             currentPage,
-            selectedCategory: req.query.category || null,
-            selectedBrand: req.query.brand || null
+            selectedCategory: req.query.category,
+            selectedBrand: req.query.brand,
         });
 
     } catch (error) {
@@ -394,9 +382,10 @@ const filterProduct = async (req, res) => {
 };
 
 
+
 const filterByPrice = async (req, res) => {
     try {
-        const user = req.session.user;
+        const user = req.session.user.id;
         const userData = await User.findOne({_id:user});
         const brands = await Brand.find({}).lean();
         const categories = await Category.find({isListed:true}).lean();

@@ -5,7 +5,8 @@ const {userAuth, adminAuth} = require("../middlewares/auth");
 const customerController = require("../controllers/admin/customerController");
 const categoryController = require("../controllers/admin/categoryController");
 const brandController = require("../controllers/admin/brandController");
-const productConroller = require("../controllers/admin/productConroller");
+const productController = require("../controllers/admin/productController");
+const couponController = require("../controllers/admin/couponController");
 const multer = require("multer");
 const storage = require("../helpers/multer");
 const Product = require("../models/productSchema");
@@ -42,16 +43,21 @@ router.get("/blockBrand", adminAuth, brandController.blockBrand);
 router.get("/unBlockBrand", adminAuth, brandController.unBlockBrand);
 router.get("/deleteBrand", adminAuth, brandController.deleteBrand);
 //Product Management
-router.get("/addProducts", adminAuth, productConroller.getProductAddPage);
-router.post("/addProducts", adminAuth, uploads.array("images", 3), productConroller.addProducts);
-router.get("/products", adminAuth, productConroller.getAllProducts);
-router.post("/addProductOffer", adminAuth, productConroller.addProductOffer);
-router.post("/removeProductOffer", adminAuth, productConroller.removeProductOffer);
-router.get("/blockProduct", adminAuth, productConroller.blockProduct);
-router.get("/unblockProduct", adminAuth, productConroller.unblockProduct);
-router.get("/editProduct", adminAuth, productConroller.getEditProduct);
-router.post("/editProduct/:id", adminAuth, uploads.array("images", 3), productConroller.editProduct);
-router.post("/deleteImage", adminAuth, productConroller.deleteSingleImage);
+router.get("/addProducts", adminAuth, productController.getProductAddPage);
+router.post("/addProducts", adminAuth, uploads.array("images", 3), productController.addProducts);
+router.get("/products", adminAuth, productController.getAllProducts);
+router.post("/addProductOffer", adminAuth, productController.addProductOffer);
+router.post("/removeProductOffer", adminAuth, productController.removeProductOffer);
+router.get("/blockProduct", adminAuth, productController.blockProduct);
+router.get("/unblockProduct", adminAuth, productController.unblockProduct);
+router.get("/editProduct", adminAuth, productController.getEditProduct);
+router.post("/editProduct/:id", adminAuth, uploads.array("images", 3), productController.editProduct);
+router.post("/deleteImage", adminAuth, productController.deleteSingleImage);
 
-
+//Coupon Management
+router.get("/coupon", adminAuth, couponController.loadCoupon);
+router.post("/createCoupon", adminAuth, couponController.createCoupon);
+router.get("/editCoupon", adminAuth, couponController.editCoupon);
+router.post("/updateCoupon", adminAuth, couponController.updateCoupon);
+router.get("/deleteCoupon", adminAuth, couponController.deleteCoupon);
 module.exports = router;

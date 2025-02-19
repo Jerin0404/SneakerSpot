@@ -6,21 +6,29 @@ const getBrandPage = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = 4;
-        const skip = (page-1)*limit;
-        const brandData = await Brand.find({}).sort({createdAt:-1}).skip(skip).limit(limit);
+        const skip = (page - 1) * limit;
+
+
+        const brandData = await Brand.find({})
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+
         const totalBrands = await Brand.countDocuments();
-        const totalPages = Math.ceil(totalBrands/limit);
-        const reverseBrand = brandData.reverse();
+        const totalPages = Math.ceil(totalBrands / limit);
+
         res.render("brands", {
-            data: reverseBrand,
-            currentPage:page,
+            data: brandData,
+            currentPage: page,
             totalPages: totalPages,
-            totalBrands:totalBrands,
-        })
+            totalBrands: totalBrands,
+        });
     } catch (error) {
-        res.redirect("/admin/pageerror")
+        res.redirect("/admin/pageerror");
     }
 };
+
 
 const addBrand = async(req, res) => {
     try {

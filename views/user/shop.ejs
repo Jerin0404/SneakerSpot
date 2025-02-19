@@ -46,6 +46,15 @@
    background-color: #0056b3;
  }
 
+ .sort-dropdown {
+   padding: 8px;
+   font-size: 14px;
+   border: 1px solid #ddd;
+   border-radius: 5px;
+   background: #fff;
+   cursor: pointer;
+ }
+
  .product-list-container {
    display: flex;
    gap: 20px;
@@ -59,61 +68,12 @@
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     font-family: 'Arial', sans-serif;
   }
-.filter-section {
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #ddd;
-  }
 
-  .filter-title {
+ .filter-title {
     font-size: 18px;
     font-weight: bold;
     color: #333;
     margin-bottom: 10px;
-  }
-
- .filter-item a {
-   text-decoration: none;
-   color: #333;
-   font-size: 14px;
- }
-
-  .category-brand-container ul,
-  .filter-section ul {
-    list-style: none;
-    padding: 0;
-  }
-
-  .filter-item a {
-    text-decoration: none;
-    color: #555;
-    font-size: 16px;
-    display: block;
-    padding: 8px 12px;
-    transition: all 0.3s ease-in-out;
-    border-radius: 5px;
-  }
-
-  .filter-item a:hover {
-    background: #007bff;
-    color: #fff;
-  }
-
-  .price-button {
-    display: block;
-    text-decoration: none;
-    color: #007bff;
-    font-weight: bold;
-    padding: 8px 12px;
-    background: #e9ecef;
-    border-radius: 5px;
-    text-align: center;
-    transition: 0.3s ease-in-out;
-  }
-
-  .price-button:hover {
-    background: #007bff;
-    color: white;
   }
 
  .product-grid {
@@ -131,15 +91,7 @@
    text-align: center;
    background: #fff;
    transition: transform 0.3s;
- }
-
- .product-card:hover {
-   transform: scale(1.03);
- }
-
- .product-card img {
-   max-width: 100%;
-   border-radius: 5px;
+   position: relative;
  }
 
  .wishlist-btn {
@@ -173,18 +125,6 @@
    gap: 10px;
    margin: 20px 0;
  }
-
- .pagination a {
-   padding: 8px 12px;
-   background-color: #f0f0f0;
-   border: 1px solid #ddd;
-   text-decoration: none;
- }
-
- .pagination .active {
-   background-color: #007bff;
-   color: #fff;
- }
 </style>
 
 <div class="main-container">
@@ -194,21 +134,27 @@
         <input type="text" name="query" placeholder="Search items..." class="search-input" />
         <button type="submit" class="search-button">Search</button>
       </form>
+      
+      <select class="sort-dropdown" onchange="location = this.value;">
+        <option value="/shop?sort=newest">Newest Arrivals</option>
+        <option value="/shop?sort=priceLow">Price: Low to High</option>
+        <option value="/shop?sort=priceHigh">Price: High to Low</option>
+        <option value="/shop?sort=nameAsc">Name: A-Z</option>
+        <option value="/shop?sort=nameDesc">Name: Z-A</option>
+      </select>
     </div>
     
     <div class="product-list-container">
       <aside class="sidebar">
         <div class="filter-section">
           <div class="filter-title">Categories</div>
-          <div class="category-brand-container">
-            <ul>
-              <% for (let i = 0; i < category.length; i++) { %>
-                <li class="filter-item">
-                  <a href="/filter?category=<%= category[i]._id %>"><%= category[i].name %></a>
-                </li>
-              <% } %>
-            </ul>
-          </div>
+          <ul>
+            <% for (let i = 0; i < category.length; i++) { %>
+              <li class="filter-item">
+                <a href="/filter?category=<%= category[i]._id %>"><%= category[i].name %></a>
+              </li>
+            <% } %>
+          </ul>
         </div>
         <div class="filter-section">
           <div class="filter-title">Brands</div>
@@ -216,7 +162,7 @@
             <% if (brand && brand.length > 0) { %>
               <% for (let i = 0; i < brand.length; i++) { %>
                 <li class="filter-item">
-                  <a href="/filter?brand=<%= brand[i]._id %>"><%= brand[i].brandName %></a>
+                  <a href="/filter?brand=<%= brand[i].brandName %>"><%= brand[i].brandName %></a>
                 </li>
               <% } %>
             <% } else { %>
@@ -236,10 +182,10 @@
       </aside>
  
       <main class="product-grid">
-        <% for (let i = 0; i < products.length; i++) { %>
+        <% for (let i = 0; i < Math.min(products.length, 6); i++) { %>
           <div class="product-card">
-            <span class="wishlist-btn" onclick="">❤️</span>
-            <a href="">
+            <span class="wishlist-btn" onclick="addToWishlist('<%=products[i]._id%>')">❤️</span>
+            <a href="/productDetails?id=<%=products[i]._id%>">
               <img src="/uploads/re-image/<%= products[i].productImage[0] %>" alt="<%= products[i].productName %>" />
               <h4><%= products[i].productName %></h4>
               <p>Brand: <%= products[i].brand %></p>
@@ -250,29 +196,47 @@
                 </span>
               </p>
             </a>
-            <button class="add-to-cart-btn" onclick="">Add to Cart</button>
+            <button class="add-to-cart-btn">Add to Cart</button>
           </div>
         <% } %>
       </main>
     </div>
-
-    <div class="pagination">
-      <% if (currentPage > 1) { %>
-        <a class="btn" href="/shop?page=<%= currentPage - 1 %>">Prev</a>
-      <% } %>
-
-      <% for (let i = 1; i <= totalPages; i++) { %>
-        <a class="btn <%= currentPage === i ? 'active' : '' %>" href="/shop?page=<%= i %>"><%= i %></a>
-      <% } %>
-     
-      <% if (currentPage < totalPages) { %>
-        <a class="btn" href="/shop?page=<%= currentPage + 1 %>">Next</a>
-      <% } %>
-    </div>
   </section>
 </div>
-
- 
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
 <%- include("../../views/partials/user/footer") %>
+
+<script>
+  function addToWishlist(productId) {
+    $.ajax({
+      url:'/addToWishlist',
+      method:'POST',
+      data: {productId : productId},
+      success: (response) => {
+        if(response.status) {
+          Swal.fire({
+            title: 'Added to Wishlist',
+            text: 'The product has been added to your wishlist',
+            icon: 'success',
+            timer: 2000
+          })
+        }else {
+          Swal.fire({
+            title: 'Already in Wishlist',
+            text: response.message,
+            icon: 'info',
+            timer: 2000,
+          })
+        }
+      },
+      error: (error)=>{
+        Swal.fire({
+          title: 'Error',
+          text: 'There are was an error adding the product to your wishlist',
+          icon: 'error',
+          timer: 2000
+        })
+      }
+    })
+  }
+</script>

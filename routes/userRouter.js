@@ -57,6 +57,8 @@ router.get("/filterPrice", userAuth, userController.filterByPrice);
 
 //wishList Management
 router.get("/wishlist", userAuth, wishlistController.loadWishlist);
+router.post("/addToWishlist", userAuth, wishlistController.addToWishlist);
+router.get("/removeFromWishlist", userAuth, wishlistController.removeProduct);
 
 //Address Management
 router.get("/manageAddress", addressController.getAddressPage);
