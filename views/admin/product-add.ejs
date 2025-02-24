@@ -83,18 +83,10 @@
                                </div>
                            </div>
                            <div class="row">
-                              
-                               <div class="col-lg-4">
-                                   <div class="mb-4">
-                                       <label class="form-label">Color</label>
-                                       <input  name="color" type="text" class="form-control border">
-                                   </div>
-                                   <div id="color-error" class="error-message"></div>
-                                </div>
                                 <div class="col-lg-4">
                                     <div class="mb-4">
                                         <label class="form-label">Size</label>
-                                        <input name="size" type="text" class="form-control border" placeholder="Enter sizes (e.g., 6,7,8)">
+                                        <input name="size" type="text" class="form-control border" placeholder="Enter sizes">
                                     </div>
                                     <div id="size-error" class="error-message"></div>
                                 </div>
@@ -203,9 +195,6 @@
     function viewImage3(event){
         document.getElementById("imgView3").src = URL.createObjectURL(event.target.files[0])
     }
-    function viewImage4(event){
-        document.getElementById("imgView4").src = URL.createObjectURL(event.target.files[0])
-    }
     function viewImage(event, index){
         let input = event.target;
         let reader = new FileReader();
@@ -298,8 +287,7 @@ function validateForm() {
     const brand = document.getElementsByName('brand')[0].value;
     const price = document.getElementsByName('regularPrice')[0].value;
     const saleprice = document.getElementsByName('salePrice')[0].value;
-    const color = document.getElementsByName('color')[0].value;
-    // const size = document.getElementsByName('size')[0].value;
+    const size = document.getElementsByName('size')[0].value;
     const category = document.getElementsByName('category')[0].value;
     const images = document.getElementById('input1');
     const quantity = document.getElementsByName('quantity')[0].value;
@@ -340,18 +328,10 @@ function validateForm() {
         displayErrorMessage('regularPrice-error', 'Regular price must be greater than sale price.');
         isValid = false;
     }
-
-    if (color.trim() === "") {
-        displayErrorMessage('color-error', 'Please enter a color.');
+    if (size.trim() === "") {
+        displayErrorMessage('size-error', 'Please enter at least one size.');
         isValid = false;
     }
-    // if (size.trim() === "") {
-    //     displayErrorMessage('size-error', 'Please enter at least one size.');
-    //     isValid = false;
-    // } else if (!/^\d+(,\d+)*$/.test(size.trim())) {
-    //     displayErrorMessage('size-error', 'Sizes must be numbers separated by commas (e.g., 6,7,8).');
-    //     isValid = false;
-    // }
     if (images.files.length === 0) {
         displayErrorMessage("images-error", 'Please select an image.');
         isValid = false;

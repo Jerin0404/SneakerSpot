@@ -110,7 +110,7 @@ const resendOtp = async (req, res) => {
         req.session.userOtp = otp;
         const email = req.session.email;
         console.log("Resending OTP to email:", email);
-        const emailSent = await sendVerificationEmai(email, otp);
+        const emailSent = await sendVerificationEmail(email, otp);
         if (emailSent) {
             console.log("Resend OTP:", otp);
             res.status(200).json({ success: true, message: "Resend OTP Successful" });
@@ -123,9 +123,9 @@ const resendOtp = async (req, res) => {
 
 const userProfile = async (req, res) => {
     try {
-        const userId = req.session.user;
+        const userId = req.session.user.id;
         const userData = await User.findOne({ _id: new mongoose.Types.ObjectId(userId) });
-        const addressData = await Address.findOne({userId : userId.id});
+        const addressData = await Address.findOne({userId : userId});
         res.render("profile", {
             user: userData,
             userAddress: addressData,
@@ -234,7 +234,7 @@ const updateEmail = async (req, res) => {
 
 const changePassword = async (req, res) => {
     try {
-        res.render("change-password")
+        res.render("change-password");
     } catch (error) {
         res.redirect("/pageNotFound");
     }
@@ -298,12 +298,10 @@ const addAddress = async (req, res) => {
 const postAddAddress = async (req, res) => {
     try {
         
-        console.log("Session Data:", req.session);
         let userId = req.session.user.id;
       
 
         console.log("Session Data:", req.session);
-        console.log("Received User ID:", userId);
 
         if (!userId) {
             return res.status(400).json({ error: "User ID not found in session" });
@@ -440,6 +438,19 @@ const deleteAddress = async (req, res) => {
     }
 }
 
+const updatePass = async (req, res) => {
+    try {
+        console.log(req.body);
+        console.log(req.session);
+        const id = req.session.user.id;
+        const hashedPass = await bcrypt.hash(req.body.newPass1, 10);
+        await User.findByIdAndUpdate({_id: id},{password: hashedPass});
+        res.redirect("/");
+    } catch (error) {
+        console.log(error);
+    }
+}
+
 module.exports = {
     getForgotPassPage,
     forgotEmailValid,
@@ -459,4 +470,5 @@ module.exports = {
     editAddress,
     postEditAddress,
     deleteAddress,
+    updatePass,
 }

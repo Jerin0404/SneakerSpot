@@ -71,11 +71,12 @@
                                 </div>
                             </div>
                         </div>
-
-                        <div class="mb-4">
-                            <label class="form-label">Color</label>
-                            <input name="color" id="color" type="text" value="<%= product.color %>" class="form-control border">
-                            <div id="color-error" class="error-message"></div>
+                        <div class="col-lg-4">
+                            <div class="mb-4">
+                                <label class="form-label">Size</label>
+                                <input name="size" type="text" class="form-control border" placeholder="Enter sizes">
+                            </div>
+                            <div id="size-error" class="error-message"></div>
                         </div>
 
                         <div class="mb-4">
@@ -92,7 +93,7 @@
 
                         <div class="mb-4">
                             <label class="form-label">Upload Image</label>
-                            <input class="form-control" type="file" name="images" id="input1" accept="image/png, image/jpeg, image/jpg">
+                            <input class="form-control" type="file" name="images" id="input1" accept="image/png, image/jpeg, image/jpg, image/webp">
                             <div id="images-error" class="error-message"></div>
                         </div>
 
@@ -125,7 +126,7 @@
         const price = getValue("#regularPrice");
         const salePrice = getValue("#salePrice");
         const quantity = getValue("#quantity");
-        const color = getValue("#color");
+        const size = getValue("#size");
         const category = getValue("#category");
         const images = document.getElementById("input1");
         const imageDatas = document.getElementById("imageDatas")?.value || "";
@@ -152,15 +153,14 @@
             displayErrorMessage("quantity-error", "Please enter a valid quantity.");
             isValid = false;
         }
-        if (!color) {
-            displayErrorMessage("color-error", "Please enter a color.");
-            isValid = false;
+        if (size.trim() === "") {
+        displayErrorMessage('size-error', 'Please enter at least one size.');
+        isValid = false;
         }
         if (!imageDatas && images.files.length === 0) {
             displayErrorMessage("images-error", "Please select an image.");
             isValid = false;
         }
-
         return isValid;
     }
 

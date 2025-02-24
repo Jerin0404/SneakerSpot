@@ -23,10 +23,7 @@ app.use(session({
     }
 }))
 
-app.get("/test-session", (req, res) => {
-    console.log("session Data:", req.session);
-    res.send(req.session);
-})
+
 
 app.use(passport.initialize());
 app.use(passport.session());

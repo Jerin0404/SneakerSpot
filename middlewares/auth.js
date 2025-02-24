@@ -1,7 +1,6 @@
 const User = require("../models/userSchema");
 
-const userAuth = (req, res, next) => {
-    console.log("session data in userAuth", req.session);   
+const userAuth = (req, res, next) => {  
     if (req.session.user) {
         const userId = req.session.user.id || req.session.user; 
         

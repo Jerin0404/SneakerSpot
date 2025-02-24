@@ -23,9 +23,9 @@ const getProductAddPage = async (req, res) => {
 
 const addProducts = async (req, res) => {
     try {
-        const products = Array.isArray(req.body) ? req.body : [req.body]; // Ensure products is an array
+        const products = Array.isArray(req.body) ? req.body : [req.body]; 
 
-        // Check and create the upload directory if it doesn't exist
+
         const imageUploadDir = path.join('public', 'uploads', 'product-images');
         if (!fs.existsSync(imageUploadDir)) {
             fs.mkdirSync(imageUploadDir, { recursive: true });
@@ -38,7 +38,6 @@ const addProducts = async (req, res) => {
 
             if (!productExists) {
                 let images = [];
-                console.log('❤️req.file:',req.files);
                 
                 if (req.files && req.files.length > 0) {
                     images = await Promise.all(
@@ -49,13 +48,11 @@ const addProducts = async (req, res) => {
                         })
                     );
                 }
-                //check product size is Pending::{ }
 
                 const category = await Category.findOne({ name: productData.category });
                 if (!category) {
                     return res.status(400).send(`Invalid category name: ${productData.category}`);
                 }
-                console.log("❤️porductData::",productData);
                 
                 productsToInsert.push({
                     productName: productData.productName,
@@ -76,7 +73,7 @@ const addProducts = async (req, res) => {
 
         if (productsToInsert.length > 0) {
             await Product.insertMany(productsToInsert);
-            return res.redirect("/admin/addProducts",{});
+            return res.redirect("/admin/addProducts");
         } else {
             return (
                 res.status(400).json("No new products added. Some products may already exist.")
@@ -92,7 +89,7 @@ const getAllProducts = async (req, res) => {
     try {
         const search = req.query.search || "";
         const page = parseInt(req.query.page) || 1;
-        const limit = 8; // Increased limit to show more products per page
+        const limit = 8;
 
         const productData = await Product.find({
             $or: [
@@ -101,8 +98,8 @@ const getAllProducts = async (req, res) => {
         })
         .limit(limit)
         .skip((page - 1) * limit)
-        .populate("category")  // Populate category details
-        .populate("brand")     // Populate brand details
+        .populate("category")
+        .populate("brand")
         .exec();
 
         const count = await Product.countDocuments({
@@ -258,12 +255,10 @@ const deleteSingleImage = async (req, res) => {
     try {
         const { imageNameToServer, productIdToServer } = req.body;
 
-        // Validate input
         if (!imageNameToServer || !productIdToServer) {
             return res.status(400).send({ status: false, message: "Missing parameters" });
         }
 
-        // Remove image from product document
         const product = await Product.findByIdAndUpdate(
             productIdToServer, 
             { $pull: { productImage: imageNameToServer } },
@@ -274,7 +269,6 @@ const deleteSingleImage = async (req, res) => {
             return res.status(404).send({ status: false, message: "Product not found" });
         }
 
-        // Delete file from filesystem
         const imagePath = path.join(__dirname, "../public/uploads/re-image", imageNameToServer);
         
         if (fs.existsSync(imagePath)) {

@@ -1,8 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const userController = require("../controllers/user/userController");
+const productController = require("../controllers/user/productController");
 const passport = require("passport");
 const profileController = require("../controllers/user/profileController");
+const cartController = require("../controllers/user/cartController")
 const { userAuth } = require("../middlewares/auth");
 const wishlistController = require("../controllers/user/wishlistController");
 const addressController = require("../controllers/user/addressController");
@@ -33,6 +35,7 @@ router.post("/forgot-email-valid", profileController.forgotEmailValid);
 router.post("/verify-passForgot-otp", profileController.verifyForgotPassOtp);
 router.get("/reset-password", profileController.getResetPassPage);
 router.post("/resend-forgot-otp", profileController.resendOtp);
+router.post("/updatePassword", profileController.updatePass);
 
 //Profile Management
 router.get("/userProfile", userAuth, profileController.userProfile);
@@ -43,17 +46,16 @@ router.post("/change-email", userAuth, profileController.changeEmailValid);
 router.post("/verify-email-otp", userAuth, profileController.verifyEmailOtp);
 router.post("/update-email", userAuth, profileController.updateEmail);
 
-//Password Updates::
+//Password Updates
 router.get('/change-password', userAuth, profileController.changePassword);
 router.post("/change-password", userAuth, profileController.changePasswordValid);
 router.post("/verify-changepassword-otp", userAuth, profileController.verifyChangePassOtp);
 
-
-
 //Shopping page
 router.get("/shop",userController.loadShoppingPage);
-router.get("/filter", userAuth, userController.filterProduct);
-router.get("/filterPrice", userAuth, userController.filterByPrice);
+
+//Product Management
+router.get("/productDetails", userAuth, productController.productDetails);
 
 //wishList Management
 router.get("/wishlist", userAuth, wishlistController.loadWishlist);
@@ -61,11 +63,13 @@ router.post("/addToWishlist", userAuth, wishlistController.addToWishlist);
 router.get("/removeFromWishlist", userAuth, wishlistController.removeProduct);
 
 //Address Management
-router.get("/manageAddress", addressController.getAddressPage);
 router.get("/addAddress", userAuth, profileController.addAddress);
 router.post("/addAddress", userAuth, profileController.postAddAddress);
 router.get("/editAddress", userAuth, profileController.editAddress);
 router.post("/editAddress", userAuth, profileController.postEditAddress);
 router.get("/deleteAddress", userAuth, profileController.deleteAddress);
 
+
+//Cart Management
+router.get("/cart", userAuth, cartController.getCartPage);
 module.exports = router
