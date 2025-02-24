@@ -21,9 +21,18 @@ router.post("/resend-otp", userController.resendOtp);
 
 //Google Auth
 router.get("/auth/google", passport.authenticate('google', {scope:['profile', 'email']}));
-router.get('/auth/google/callback', passport.authenticate('google', {failureRedirect:'/signup'}), (req, res) => {
-    res.redirect('/')
-});
+router.get('/auth/google/callback',
+    passport.authenticate('google', { failureRedirect: '/signup' }),
+    (req, res) => {
+        if (!req.user) {
+            return res.redirect('/signup');
+        }
+        req.session.user = { id: req.user._id };
+
+        res.redirect('/');
+    }
+);
+
 
 //Login Management
 router.post("/login", userController.login);

@@ -70,6 +70,19 @@
                                     <div class="short-desc mb-30">
                                         <p><%= product.description %></p>
                                     </div>
+                                    <div class="product-size">
+                                        <h6>Select Size:</h6>
+                                        <select id="sizeSelect" class="form-control">
+                                            <option value="">Select Size</option>
+                                            <% if (product.sizes && product.sizes.length > 0) { %>
+                                                <% product.sizes.forEach((size) => { %>
+                                                    <option value="<%= size %>"><%= size %></option>
+                                                <% }); %>
+                                            <% } else { %>
+                                                <option value="" disabled>No sizes available</option>
+                                            <% } %>
+                                        </select>
+                                    </div>
                                     
                                     <div class="product_sort_info font-xs mb-30">
                                         <ul>
@@ -111,25 +124,27 @@
 <%- include("../../views/partials/user/footer") %>
 
 <script>
-document.getElementById("addToCartBtn").addEventListener("click", function(event) {
-    event.preventDefault();
-    const selectedSize = document.getElementById("sizeSelect").value;
-    const selectedColor = document.querySelector("input[name='color']:checked")?.value;
+    document.getElementById("addToCartBtn").addEventListener("click", function(event) {
+        event.preventDefault();
+        
+        const selectedSize = document.getElementById("sizeSelect").value;
+        const selectedColor = document.querySelector("input[name='color']:checked")?.value;
     
-    if (!selectedSize || !selectedColor) {
-        alert("Please select a size and color before adding to cart.");
-        return;
-    }
-
-    const productId = "<%= product._id %>";
-
-    fetch("/cart/add", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId, size: selectedSize, color: selectedColor, quantity: 1 })
-    }).then(response => response.json())
-    .then(data => {
-        alert(data.success ? "Product added to cart successfully!" : "Failed to add product to cart.");
+        if (!selectedSize) {
+            alert("Please select a size before adding to cart.");
+            return;
+        }
+    
+        const productId = "<%= product._id %>";
+    
+        fetch("/cart/add", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ productId, size: selectedSize, color: selectedColor, quantity: 1 })
+        }).then(response => response.json())
+        .then(data => {
+            alert(data.success ? "Product added to cart successfully!" : "Failed to add product to cart.");
+        });
     });
-});
-</script>
+    </script>
+    

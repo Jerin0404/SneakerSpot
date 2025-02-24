@@ -1,3 +1,4 @@
+const mongoose  = require("mongoose");
 const User = require("../../models/userSchema");
 const Category = require("../../models/categorySchema");
 const Product = require("../../models/productSchema");
@@ -281,6 +282,7 @@ const logout = async (req, res) => {
     }
 };
 
+// Shopping Page Controller
 const loadShoppingPage = async (req, res) => {
     try {
         let categories = await Category.find({});
@@ -292,60 +294,64 @@ const loadShoppingPage = async (req, res) => {
 
         let filter = {
             isBlocked: false,
-            quantity: { $gt: 0 },
+            quantity: { $gt: 0 }, // Ensure only available products are shown
         };
 
-
+        // 🔹 Search Filter
         if (search) {
             filter.productName = { $regex: search, $options: "i" };
         }
+
+        // 🔹 Category Filter
+        let selectedCategories = [];
         if (categoryQuery) {
-            const categoryArray = Array.isArray(categoryQuery) ? categoryQuery : categoryQuery.split(",");
-            filter.category = { $in: categoryArray };
+            selectedCategories = categoryQuery.split(",");
+            filter.category = { $in: selectedCategories };
         }
 
+        // 🔹 Brand Filter (Fix ObjectId conversion)
+        let selectedBrands = [];
         if (brandQuery) {
-            const brandArray = Array.isArray(brandQuery) ? brandQuery : brandQuery.split(",");
-            filter.brand = { $in: brandArray };
+            selectedBrands = brandQuery.split(",");
+            filter.brand = { $in: selectedBrands.map(id => new mongoose.Types.ObjectId(id)) };
         }
 
-
+        // 🔹 Size Filter
+        let selectedSizes = [];
         if (sizes) {
-            const sizeArray = Array.isArray(sizes) ? sizes : sizes.split(",");
-            filter.sizes = { $in: sizeArray };
+            selectedSizes = sizes.split(",");
+            filter.sizes = { $in: selectedSizes };
         }
+
+        // 🔹 Price Range Filter
         if (minPrice || maxPrice) {
             filter.salePrice = {};
             if (minPrice) filter.salePrice.$gte = parseFloat(minPrice);
             if (maxPrice) filter.salePrice.$lte = parseFloat(maxPrice);
         }
 
+        // 🔹 Sorting Logic
         let sortOption = {};
         switch (sort) {
-            case "priceLowHigh":
-                sortOption = { salePrice: 1 };
-                break;
-            case "priceHighLow":
-                sortOption = { salePrice: -1 };
-                break;
-            case "nameAZ":
-                sortOption = { productName: 1 };
-                break;
-            case "nameZA":
-                sortOption = { productName: -1 };
-                break;
-            case "newArrivals":
-                sortOption = { createdAt: -1 };
-                break;
-            default:
-                sortOption = { createdAt: -1 };
+            case "priceLowHigh": sortOption = { salePrice: 1 }; break;
+            case "priceHighLow": sortOption = { salePrice: -1 }; break;
+            case "nameAZ": sortOption = { productName: 1 }; break;
+            case "nameZA": sortOption = { productName: -1 }; break;
+            case "newArrivals": sortOption = { createdAt: -1 }; break;
+            default: sortOption = { createdAt: -1 };
         }
 
+        // 🔹 Fetch Products & Count
         const [products, totalProducts] = await Promise.all([
             Product.find(filter).sort(sortOption).skip(skip).limit(limit).lean(),
             Product.countDocuments(filter),
         ]);
 
+        // 🔹 Debugging Logs (Remove in production)
+        console.log("Applied Filter:", JSON.stringify(filter, null, 2));
+        console.log("Found Products:", products.length);
+
+        // 🔹 Render Shop Page
         res.render("shop", {
             products,
             totalProducts,
@@ -355,16 +361,18 @@ const loadShoppingPage = async (req, res) => {
             sort,
             categories,
             brands,
+            selectedBrands,
+            selectedCategories,
+            selectedSizes,
             minPrice,
             maxPrice,
         });
+
     } catch (error) {
         console.error("Error loading products:", error);
-        res.redirect("pageNotFound");
+        res.status(500).render("pageNotFound"); // Show error page instead of blank page
     }
 };
-
-
 
 
 module.exports = {

@@ -13,7 +13,6 @@ const productDetails = async (req, res) => {
             return res.redirect("/pageNotFound");
         }
 
-
         const product = await Product.findById(productId).populate('category');
 
         if (!product) {
@@ -26,13 +25,13 @@ const productDetails = async (req, res) => {
         const totalOffer = categoryOffer + productOffer;
 
 
-        product.size = product.size || [];
+        product.sizes = Array.isArray(product.sizes) ? product.sizes : (product.sizes ? [product.sizes] : []);
 
         res.render("product-details", {
             user: userData,
-            product: product,
+            product,
             quantity: product.quantity,
-            totalOffer: totalOffer,
+            totalOffer,
             category: findCategory,
         });
     } catch (error) {

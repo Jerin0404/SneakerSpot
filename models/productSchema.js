@@ -36,8 +36,8 @@ const productSchema = new Schema({
         type: Number,
         default: true
     },
-    size: {
-        type: String,
+    sizes: {
+        type: [String],
         required: true
     },
     productImage: {
