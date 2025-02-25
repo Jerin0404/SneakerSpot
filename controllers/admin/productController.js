@@ -23,8 +23,7 @@ const getProductAddPage = async (req, res) => {
 
 const addProducts = async (req, res) => {
     try {
-        const products = Array.isArray(req.body) ? req.body : [req.body]; 
-
+        const products = Array.isArray(req.body) ? req.body : [req.body];
 
         const imageUploadDir = path.join('public', 'uploads', 'product-images');
         if (!fs.existsSync(imageUploadDir)) {
@@ -38,7 +37,7 @@ const addProducts = async (req, res) => {
 
             if (!productExists) {
                 let images = [];
-                
+
                 if (req.files && req.files.length > 0) {
                     images = await Promise.all(
                         req.files.map(async (file) => {
@@ -53,7 +52,20 @@ const addProducts = async (req, res) => {
                 if (!category) {
                     return res.status(400).send(`Invalid category name: ${productData.category}`);
                 }
-                
+
+                let sizes = [];
+                if (typeof productData.sizes === "string") {
+                    try {
+                        sizes = JSON.parse(productData.sizes);
+                    } catch (error) {
+                        sizes = productData.sizes.split(",").map(size => size.trim());
+                    }
+                } else if (Array.isArray(productData.sizes)) {
+                    sizes = productData.sizes;
+                }
+
+                console.log("Parsed sizes:", sizes);
+
                 productsToInsert.push({
                     productName: productData.productName,
                     description: productData.description,
@@ -63,7 +75,7 @@ const addProducts = async (req, res) => {
                     salePrice: productData.salePrice,
                     createdOn: new Date(),
                     quantity: productData.quantity,
-                    size: productData.size,
+                    sizes: sizes,
                     color: productData.color,
                     productImage: images,
                     status: 'Available',
@@ -75,15 +87,14 @@ const addProducts = async (req, res) => {
             await Product.insertMany(productsToInsert);
             return res.redirect("/admin/addProducts");
         } else {
-            return (
-                res.status(400).json("No new products added. Some products may already exist.")
-            )
+            return res.status(400).json("No new products added. Some products may already exist.");
         }
     } catch (error) {
         console.error("Error saving products", error);
         return res.redirect("/admin/pageerror");
     }
 };
+
 
 const getAllProducts = async (req, res) => {
     try {

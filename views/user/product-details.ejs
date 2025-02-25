@@ -1,4 +1,27 @@
 <%- include("../../views/partials/user/header") %>
+<style>
+    .size-options {
+        display: flex;
+        gap: 10px;
+    }
+
+    .size-btn {
+    background-color: #f0f0f0;
+    color: #333;
+    border: 1px solid #ccc;
+    padding: 10px 15px;
+    margin: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+}
+
+.size-btn.active {
+    background-color: black !important;
+    color: white !important;
+    border: 1px solid black;
+}
+
+</style>
 
 <main class="main">
     <div class="page-header breadcrumb-wrap">
@@ -54,7 +77,9 @@
 
                                     <div class="clearfix product-price-cover">
                                         <div class="product-price primary-color float-left">
-                                            <ins><span class="text-brand"><%= product.salePrice %></span></ins>
+                                            <ins><span class="text-brand" id="dynamicSalePrice">
+                                                <%= product.salePrice %>
+                                            </span></ins>
                                             <ins><span class="old-price font-md ml-15"><%= product.regularPrice %></span></ins>
                                             <span class="save-price font-md color3 ml-15">
                                                 <% if (!totalOffer) { %>
@@ -66,23 +91,30 @@
                                         </div>
                                     </div>
                                     
+                                    
+                                    
                                     <div class="bt-1 border-color-1 mt-15 mb-15"></div>
                                     <div class="short-desc mb-30">
                                         <p><%= product.description %></p>
                                     </div>
                                     <div class="product-size">
                                         <h6>Select Size:</h6>
-                                        <select id="sizeSelect" class="form-control">
-                                            <option value="">Select Size</option>
+                                        <div class="size-options">
                                             <% if (product.sizes && product.sizes.length > 0) { %>
                                                 <% product.sizes.forEach((size) => { %>
-                                                    <option value="<%= size %>"><%= size %></option>
+                                                    <button class="size-btn" 
+                                                            data-size="<%= size %>" 
+                                                            data-price="<%= product.sizePrices[size] %>">
+                                                        Size <%= size %>
+                                                    </button>
                                                 <% }); %>
                                             <% } else { %>
-                                                <option value="" disabled>No sizes available</option>
+                                                <p>No sizes available</p>
                                             <% } %>
-                                        </select>
+                                        </div>
+                                        <input type="hidden" id="selectedSize" name="selectedSize">
                                     </div>
+                                                                                                           
                                     
                                     <div class="product_sort_info font-xs mb-30">
                                         <ul>
@@ -128,7 +160,6 @@
         event.preventDefault();
         
         const selectedSize = document.getElementById("sizeSelect").value;
-        const selectedColor = document.querySelector("input[name='color']:checked")?.value;
     
         if (!selectedSize) {
             alert("Please select a size before adding to cart.");
@@ -146,5 +177,32 @@
             alert(data.success ? "Product added to cart successfully!" : "Failed to add product to cart.");
         });
     });
+    document.addEventListener("DOMContentLoaded", function () {
+    const sizeButtons = document.querySelectorAll(".size-btn");
+    const selectedSizeInput = document.getElementById("selectedSize");
+    const dynamicSalePrice = document.getElementById("dynamicSalePrice");
+
+    const baseSalePrice = parseFloat(dynamicSalePrice.innerText);
+    const baseSize = Math.min(...[...sizeButtons].map(btn => parseInt(btn.getAttribute("data-size"))));
+
+    sizeButtons.forEach(button => {
+        button.addEventListener("click", function () {
+            sizeButtons.forEach(btn => btn.classList.remove("active"));
+            this.classList.add("active");
+
+            const selectedSize = parseInt(this.getAttribute("data-size"));
+            const newPrice = baseSalePrice + (selectedSize - baseSize) * 200;
+
+            selectedSizeInput.value = selectedSize;
+            dynamicSalePrice.innerText = newPrice;
+        });
+    });
+
+    if (sizeButtons.length > 0) {
+        sizeButtons[0].click();
+    }
+});
+
+
     </script>
     

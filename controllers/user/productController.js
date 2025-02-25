@@ -24,12 +24,30 @@ const productDetails = async (req, res) => {
         const productOffer = product.productOffer || 0;
         const totalOffer = categoryOffer + productOffer;
 
+        // Ensure sizes are properly formatted
+        let sizes = [];
+        if (Array.isArray(product.sizes)) {
+            sizes = product.sizes.flatMap(size => 
+                typeof size === "string" ? size.split(",") : [size]
+            ).map(size => size.trim());
+        }
 
-        product.sizes = Array.isArray(product.sizes) ? product.sizes : (product.sizes ? [product.sizes] : []);
+        // Define the base price and base size
+        const basePrice = product.basePrice || 0; // Ensure a default base price exists
+        const baseSize = Math.min(...sizes.map(size => parseInt(size, 10))); // Get the smallest size
+
+        // Calculate sale price for each size dynamically
+        const sizePrices = sizes.reduce((acc, size) => {
+            const numericSize = parseInt(size, 10);
+            if (!isNaN(numericSize)) {
+                acc[size] = basePrice + (numericSize - baseSize) * 200;
+            }
+            return acc;
+        }, {});
 
         res.render("product-details", {
             user: userData,
-            product,
+            product: { ...product.toObject(), sizes, sizePrices },
             quantity: product.quantity,
             totalOffer,
             category: findCategory,
@@ -39,6 +57,8 @@ const productDetails = async (req, res) => {
         res.redirect("/pageNotFound");
     }
 };
+
+
 
 
 module.exports = {

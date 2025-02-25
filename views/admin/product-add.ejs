@@ -83,14 +83,19 @@
                                </div>
                            </div>
                            <div class="row">
-                                <div class="col-lg-4">
-                                    <div class="mb-4">
-                                        <label class="form-label">Size</label>
-                                        <input name="size" type="text" class="form-control border" placeholder="Enter sizes">
+                            <div class="col-lg-4">
+                                <div class="mb-4">
+                                    <label class="form-label">Sizes</label>
+                                    <div id="size-container">
+                                        <div class="input-group mb-2">
+                                            <input name="sizes[]" type="text" class="form-control border" placeholder="Enter size">
+                                            <button type="button" class="btn btn-danger remove-size" style="display: none;">&times;</button>
+                                        </div>
                                     </div>
-                                    <div id="size-error" class="error-message"></div>
                                 </div>
-                           </div>
+                                <div id="size-error" class="error-message"></div>
+                            </div>
+                        </div>
                            <div class="card mb-4">
                                <div class="card-body">
                                    <div class="row gx-2">
@@ -287,7 +292,20 @@ function validateForm() {
     const brand = document.getElementsByName('brand')[0].value;
     const price = document.getElementsByName('regularPrice')[0].value;
     const saleprice = document.getElementsByName('salePrice')[0].value;
-    const size = document.getElementsByName('size')[0].value;
+    const sizes = document.getElementsByName('sizes[]');
+    let hasValidSize = false;
+
+    for (let i = 0; i < sizes.length; i++) {
+        if (sizes[i].value.trim() !== "") {
+            hasValidSize = true;
+        break;
+        }
+    }
+
+    if (!hasValidSize) {
+        displayErrorMessage('size-error', 'Please enter at least one valid size.');
+        isValid = false;
+    }
     const category = document.getElementsByName('category')[0].value;
     const images = document.getElementById('input1');
     const quantity = document.getElementsByName('quantity')[0].value;
@@ -328,10 +346,17 @@ function validateForm() {
         displayErrorMessage('regularPrice-error', 'Regular price must be greater than sale price.');
         isValid = false;
     }
-    if (size.trim() === "") {
-        displayErrorMessage('size-error', 'Please enter at least one size.');
-        isValid = false;
+    for (let i = 0; i < sizes.length; i++) {
+        if (sizes[i].value.trim() !== "") {
+            hasValidSize = true;
+        break;
+        }
     }
+if (!hasValidSize) {
+    displayErrorMessage('size-error', 'Please enter at least one valid size.');
+    isValid = false;
+}
+
     if (images.files.length === 0) {
         displayErrorMessage("images-error", 'Please select an image.');
         isValid = false;
