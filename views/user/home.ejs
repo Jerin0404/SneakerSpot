@@ -106,9 +106,9 @@
                                  class="img-fluid">
                         </a>
                         <div class="product-overlay">
-                            <a href="/addToWishlist?id=<%= products[i]._id %>" class="wishlist-btn">
+                            <button class="wishlist-btn" data-id="<%= products[i]._id %>">
                                 <i class="fa fa-heart"></i>
-                            </a>
+                            </button>
                         </div>
                     </div>
                     <div class="product-info text-center">
@@ -216,5 +216,53 @@
         background: #e84118;
     }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+    const wishlistButtons = document.querySelectorAll(".wishlist-btn");
+
+    wishlistButtons.forEach(button => {
+        button.addEventListener("click", function (event) {
+            event.preventDefault();
+
+            const productId = this.getAttribute("data-id");
+
+            fetch("/addToWishlist", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ productId })
+            })
+            .then(response => response.json())
+            .then(data => {
+
+                if (data.status === true) {
+                    Swal.fire({
+                        icon: "success",
+                        title: "Added to Wishlist!",
+                        text: "This product has been successfully added to your wishlist.",
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Already in Wishlist",
+                        text: data.message || "The product already in the wishlist please visit the wishlist page.",
+                    });
+                }
+            })
+            .catch(error => {
+                console.error("Fetch Error:", error);
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: "Something went wrong. Please try again later.",
+                });
+            });
+        });
+    });
+});
+
+</script>
 
 <%-include("../../views/partials/user/footer")%>

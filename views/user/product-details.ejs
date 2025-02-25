@@ -134,7 +134,7 @@
                                         </div>
                                         <div class="product-extra-link2">
                                             <button type="submit" class="button button-add-to-cart" id="addToCartBtn">Add to cart</button>
-                                            <a aria-label="Add To Wishlist" class="action-btn hover-up" href="#"><i class="fi-rs-heart"></i></a>
+                                            <button type="submit" class="button button-buy-now" id="buyNowBtn">Buy Now</button>
                                         </div>
                                     </div>
 
@@ -155,54 +155,5 @@
 
 <%- include("../../views/partials/user/footer") %>
 
-<script>
-    document.getElementById("addToCartBtn").addEventListener("click", function(event) {
-        event.preventDefault();
-        
-        const selectedSize = document.getElementById("sizeSelect").value;
-    
-        if (!selectedSize) {
-            alert("Please select a size before adding to cart.");
-            return;
-        }
-    
-        const productId = "<%= product._id %>";
-    
-        fetch("/cart/add", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ productId, size: selectedSize, color: selectedColor, quantity: 1 })
-        }).then(response => response.json())
-        .then(data => {
-            alert(data.success ? "Product added to cart successfully!" : "Failed to add product to cart.");
-        });
-    });
-    document.addEventListener("DOMContentLoaded", function () {
-    const sizeButtons = document.querySelectorAll(".size-btn");
-    const selectedSizeInput = document.getElementById("selectedSize");
-    const dynamicSalePrice = document.getElementById("dynamicSalePrice");
 
-    const baseSalePrice = parseFloat(dynamicSalePrice.innerText);
-    const baseSize = Math.min(...[...sizeButtons].map(btn => parseInt(btn.getAttribute("data-size"))));
-
-    sizeButtons.forEach(button => {
-        button.addEventListener("click", function () {
-            sizeButtons.forEach(btn => btn.classList.remove("active"));
-            this.classList.add("active");
-
-            const selectedSize = parseInt(this.getAttribute("data-size"));
-            const newPrice = baseSalePrice + (selectedSize - baseSize) * 200;
-
-            selectedSizeInput.value = selectedSize;
-            dynamicSalePrice.innerText = newPrice;
-        });
-    });
-
-    if (sizeButtons.length > 0) {
-        sizeButtons[0].click();
-    }
-});
-
-
-    </script>
     

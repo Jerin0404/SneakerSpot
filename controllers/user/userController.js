@@ -282,55 +282,52 @@ const logout = async (req, res) => {
     }
 };
 
-// Shopping Page Controller
+
 const loadShoppingPage = async (req, res) => {
     try {
         let categories = await Category.find({});
         let brands = await Brand.find({});
 
         const { search, sort, categories: categoryQuery, brands: brandQuery, sizes, minPrice, maxPrice, page = 1 } = req.query;
-        const limit = 9;
+        const limit = 12;
         const skip = (parseInt(page) - 1) * limit;
 
         let filter = {
             isBlocked: false,
-            quantity: { $gt: 0 }, // Ensure only available products are shown
+            quantity: { $gt: 0 },
         };
 
-        // 🔹 Search Filter
         if (search) {
             filter.productName = { $regex: search, $options: "i" };
         }
 
-        // 🔹 Category Filter
+
         let selectedCategories = [];
         if (categoryQuery) {
             selectedCategories = categoryQuery.split(",");
             filter.category = { $in: selectedCategories };
         }
 
-        // 🔹 Brand Filter (Fix ObjectId conversion)
         let selectedBrands = [];
         if (brandQuery) {
             selectedBrands = brandQuery.split(",");
-            filter.brand = { $in: selectedBrands.map(id => new mongoose.Types.ObjectId(id)) };
+            filter.brand = { $in: selectedBrands };
         }
 
-        // 🔹 Size Filter
+
         let selectedSizes = [];
         if (sizes) {
             selectedSizes = sizes.split(",");
             filter.sizes = { $in: selectedSizes };
         }
 
-        // 🔹 Price Range Filter
         if (minPrice || maxPrice) {
             filter.salePrice = {};
             if (minPrice) filter.salePrice.$gte = parseFloat(minPrice);
             if (maxPrice) filter.salePrice.$lte = parseFloat(maxPrice);
         }
 
-        // 🔹 Sorting Logic
+
         let sortOption = {};
         switch (sort) {
             case "priceLowHigh": sortOption = { salePrice: 1 }; break;
@@ -341,17 +338,14 @@ const loadShoppingPage = async (req, res) => {
             default: sortOption = { createdAt: -1 };
         }
 
-        // 🔹 Fetch Products & Count
         const [products, totalProducts] = await Promise.all([
             Product.find(filter).sort(sortOption).skip(skip).limit(limit).lean(),
             Product.countDocuments(filter),
         ]);
 
-        // 🔹 Debugging Logs (Remove in production)
         console.log("Applied Filter:", JSON.stringify(filter, null, 2));
         console.log("Found Products:", products.length);
 
-        // 🔹 Render Shop Page
         res.render("shop", {
             products,
             totalProducts,
@@ -370,7 +364,7 @@ const loadShoppingPage = async (req, res) => {
 
     } catch (error) {
         console.error("Error loading products:", error);
-        res.status(500).render("pageNotFound"); // Show error page instead of blank page
+        res.status(500).render("pageNotFound");
     }
 };
 

@@ -5,7 +5,8 @@ const {Schema} = mongoose;
 const productSchema = new Schema({
     productName: {
         type: String,
-        required: true
+        required: true,
+        unique: true,
     },
     description: {
         type: String,

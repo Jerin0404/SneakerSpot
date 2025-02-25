@@ -1,22 +1,25 @@
 const User = require("../../models/userSchema");
 const Product = require("../../models/productSchema");
-const mongodb = require("mongodb");
+const mongoose = require("mongoose");
+
 
 
 const getCartPage = async (req, res) => {
     try {
         const id = req.session.user.id;
         const user = await User.findOne({_id: id});
-        const productIds = user.cart.map((item) => item.productId);
+        if (!user) return res.redirect("/login");
+
+        const productIds = user.cart?.map((item) => item.productId) || [];
         const products = await Product.find({_id: {$in: productIds}});
-        const oid = new mongodb.ObjectId(id);
+        const oid = new mongoose.Types.ObjectId(id);
 
         let data = await User.aggregate([
             {$match: {_id: oid}},
             {$unwind: "$cart"},
             {
                 $project: {
-                    prold: {$toObjectId: "$cart.productId"},
+                    prold: "$cart.productId",
                     quantity: "$cart.quantity",
                 }
             },
@@ -29,18 +32,16 @@ const getCartPage = async (req, res) => {
                 },
             },
         ]);
-        let quantity = 0;
-        for(const i of user.cart) {
-            quantity += i.quantity
-        }
+
+        let quantity = user.cart.reduce((sum, item) => sum + item.quantity, 0);
+
         let grandTotal = 0;
-        for(let i = 0; i < data.length; i++) {
-            if(products[i]) {
+        for (let i = 0; i < data.length; i++) {
+            if (data[i].productDetails.length > 0) { // Prevent errors if product doesn't exist
                 grandTotal += data[i].productDetails[0].salePrice * data[i].quantity;
             }
-            req.session.grandTotal = grandTotal;
-
         }
+        req.session.grandTotal = grandTotal;
 
         res.render("cart", {
             user,
@@ -49,6 +50,7 @@ const getCartPage = async (req, res) => {
             grandTotal,
         });
     } catch (error) {
+        console.error("Error fetching cart:", error);
         res.redirect("/pageNotFound");
     }
 };
@@ -56,4 +58,5 @@ const getCartPage = async (req, res) => {
 
 module.exports = {
     getCartPage,
+
 }
