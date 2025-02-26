@@ -26,83 +26,78 @@
                             </thead>
                             <tbody>
 
-                                <% if (data.length> 0) { %>
-                                    <% var x=0 %>
-                                        <% for (let i=0; i < data.length;i++) { %>
+                                <% if (data.length > 0) { %>
+                                    <% var x = 0; %>
+                                    <% for (let i = 0; i < data.length; i++) { %>
 
-                                            <tr>
-                                                <td class="image product-thumbnail">
-                                                    <img src="/uploads/re-image/<%= data[i].productDetails[0].productImage[0] %>"
-                                                        alt="#" />
+                                        <tr>
+                                            <td class="image product-thumbnail">
+                                                <% if (data[i].productId && data[i].productId.image && data[i].productId.image.length > 0) { %>
+                                                    <img src="/uploads/re-image/<%= data[i].productId.image[0] %>" alt="Product Image">
+                                                <% } else { %>
+                                                    <img src="/uploads/default-image.jpg" alt="No Image Available">
+                                                <% } %>
+                                            </td>
+                                            <td class="product-des product-name">
+                                                <h5 class="product-name">
+                                                    <a href="cart">
+                                                        <%= data[i].name ? data[i].name : 'Product Name Not Available' %>
+                                                    </a>
+                                                </h5>
+                                                <p class="font-xs">
+                                                    <%= data[i].category ? data[i].category + '<br />' : 'Category Not Available<br />' %>
+                                                    <%= data[i].brand ? data[i].brand : 'Brand Not Available' %>
+                                                </p>
+                                            </td>
+                                            <td class="price" data-title="Price">
+                                                ₹<span> 
+                                                    <% if (data[i].price) { %>
+                                                        <text id="subTotal<%= data[i].productId %>">
+                                                            <%= data[i].price * data[i].quantity %>
+                                                        </text>
+                                                    <% } else { %>
+                                                        <text>Price Not Available</text>
+                                                    <% } %>
+                                                </span>
+                                            </td>
+
+                                            <% if (data[i].productDetails && data[i].productDetails.length > 0) { %>
+                                                <% x += data[i].productDetails[0].salePrice * data[i].quantity; %>
+                                                <td class="text-center" data-title="Stock">
+                                                    <div class="detail-qty border radius m-auto">
+                                                        <div class="quantity-control">
+                                                            <button class="btn btn-sm increment-button"
+                                                                onclick="changeQuantity('<%= data[i].productDetails[0]._id %>', '<%= data[i].quantity %>', 1, '<%= data[i].productDetails[0].salePrice %>', '<%= data[i].productDetails[0]._id %>', '<%= data[i].productDetails[0].quantity %>')">+</button>
+                                                            <input class="quantity-input"
+                                                                id="cartProductQuantity<%= data[i].productDetails[0]._id %>"
+                                                                value="<%= data[i].quantity %>"
+                                                                style="width: 45px;" type="text" readonly>
+                                                            <button class="btn btn-sm decrement-button"
+                                                                onclick="changeQuantity('<%= data[i].productDetails[0]._id %>', '<%= data[i].quantity %>', -1, '<%= data[i].productDetails[0].salePrice %>', '<%= data[i].productDetails[0]._id %>', '<%= data[i].productDetails[0].quantity %>')">-</button>
+                                                        </div>
+                                                    </div>
                                                 </td>
-                                                <td class="product-des product-name">
-                                                    <h5 class="product-name">
-                                                        <a href="cart">
-                                                            <%= data[i].productDetails[0].productName %>
-                                                        </a>
-                                                    </h5>
-                                                    <p class="font-xs">
-                                                        <%= data[i].productDetails[0].category %><br />
-                                                            <%= data[i].productDetails[0].brand %>.
-                                                    </p>
+
+                                                <td class="action" data-title="Remove">
+                                                    <a class="btn btn-sm"
+                                                        href="#" onclick="confirmRemove('<%= data[i].productDetails[0]._id %>')">
+                                                        <i class="fi-rs-trash"></i>
+                                                    </a>
                                                 </td>
-                                                <td class="price" data-title="Price">₹<span> <text
-                                                            id="subTotal<%= data[i].productDetails[0]._id %>">
-                                                            <%= data[i].productDetails[0].salePrice * data[i].quantity %>
-                                                        </text><br>
-                                                        <small class="text-muted text-nowrap">₹<span id="price">
-                                                                <%= data[i].productDetails[0].salePrice %>
-
-                                                            </span>
-                                                            / per item </small>
-
-                                                </td>
-                                               
-
-                                                    <% x +=data[i].productDetails[0].salePrice * data[i].quantity%>
-
-
-                                                        <td class="text-center" data-title="Stock">
-                                                            <div class="detail-qty border radius m-auto">
-                                                                <div class="quantity-control">
-
-
-                                                                    
-                                                                    <button class="btn btn-sm increment-button"
-                                                                        onclick="changeQuantity('<%= data[i].productDetails[0]._id %>', '<%= data[i].quantity %>', 1, '<%= data[i].productDetails[0].salePrice %>',  '<%= data[i].productDetails[0]._id %>', '<%= data[i].productDetails[0].quantity%>')">+</button>
-
-
-                                                                    <input class="quantity-input"
-                                                                        id="cartProductQuantity<%= data[i].productDetails[0]._id %>"
-                                                                        value="<%= data[i].quantity %>"
-                                                                        style="width: 45px;" type="text" readonly
-                                                                        value="">
-                                                                    <button class="btn btn-sm decrement-button"
-                                                                        onclick="changeQuantity('<%= data[i].productDetails[0]._id %>', '<%= data[i].quantity %>', -1, '<%= data[i].productDetails[0].salePrice %>',  '<%= data[i].productDetails[0]._id %>', '<%= data[i].productDetails[0].quantity%>')">-</button>
-
-                                                                </div>
-                                                            </div>
-                                                        </td>
-
-                                                        <td class="action" data-title="Remove">
-                                                            <a class="btn btn-sm"
-                                                                href="#" onclick="confirmRemove('<%= data[i].productDetails[0]._id %>')">
-                                                                <i class="fi-rs-trash"></i>
-                                                            </a>
-                                                        </td>
-
-                                                        <% } %>
-                                                       
-                                                            <% } else { %>
-                                            <tr>
-
-                                                <td colspan="2" class="text-center">
-                                                    <p class="lead mb-4">No item found in Cart</p>
-                                                </td>
-                                            </tr>
+                                            <% } else { %>
+                                                <td colspan="3" class="text-center">Product Details Not Available</td>
                                             <% } %>
-                                                    <input type="hidden" name="" id="totalabc" value="<%= x  %>">
+                                        </tr>
+                                    <% } %>
+                                <% } else { %>
+                                    <tr>
+                                        <td colspan="5" class="text-center">
+                                            <p class="lead mb-4">No item found in Cart</p>
+                                        </td>
+                                    </tr>
+                                <% } %>
 
+                                <input type="hidden" name="" id="totalabc" value="<%= x  %>">
                             </tbody>
                         </table>
                     </div>
@@ -115,7 +110,6 @@
                         <div class="table-responsive">
                             <table class="table">
                                 <tbody>
-
                                     <tr>
                                         <td class="cart_total_label">Shipping</td>
                                         <td class="cart_total_amount"> <i class="ti-gift mr-5"></i> Free Shipping
@@ -140,15 +134,11 @@
                         </a>
                     </div>
                 </div>
-
             </div>
-
-        </div>
-        </div>
-        </div>
         </div>
     </section>
 </main>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     function changeQuantity(productId, cartQuantity, count, productPrice, i, productQuantity) {

@@ -81,6 +81,7 @@ router.get("/deleteAddress", userAuth, profileController.deleteAddress);
 
 //Cart Management
 router.get("/cart", userAuth, cartController.viewCart);
+router.post("/addToCart",cartController.addToCart);
 
 
 module.exports = router

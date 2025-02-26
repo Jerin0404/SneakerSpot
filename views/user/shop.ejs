@@ -633,27 +633,32 @@
 
     addToCartButtons.forEach(button => {
         button.addEventListener("click", function () {
-            const productId = this.getAttribute("data-id").trim();
-            console.log("Product ID:", productId);
+            const productId = this.getAttribute("data-id")?.trim(); 
 
             if (!productId) {
                 Swal.fire("Error!", "Product ID is missing", "error");
                 return;
             }
 
-            fetch("/addToCart", {
+            console.log("Adding to cart:", productId); // Debugging log
+
+            fetch("/addToCart", { 
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ productId })
+                body: JSON.stringify({ productId })  // Add additional fields if required
             })
-            .then(response => {
-                if (!response.ok) {
-                    return response.text().then(text => { throw new Error(text); });
+            .then(async response => {
+                const responseText = await response.text();
+                console.log("Raw response:", responseText); // Debugging log
+                
+                try {
+                    return JSON.parse(responseText);
+                } catch (e) {
+                    throw new Error("Invalid JSON response from server");
                 }
-                return response.json();
             })
             .then(data => {
-                console.log("Response:", data);
+                console.log("Server response:", data); // Debugging log
 
                 if (data.status) {
                     Swal.fire("Success!", "Added to cart successfully", "success");
@@ -663,11 +668,12 @@
             })
             .catch(error => {
                 console.error("Fetch error:", error);
-                Swal.fire("Error!", "Server error occurred", "error");
+                Swal.fire("Error!", error.message || "Server error occurred", "error");
             });
         });
     });
 });
+
 
 </script>
 
