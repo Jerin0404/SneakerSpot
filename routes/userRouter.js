@@ -80,7 +80,7 @@ router.get("/deleteAddress", userAuth, profileController.deleteAddress);
 
 
 //Cart Management
-router.get("/cart", userAuth, cartController.getCartPage);
+router.get("/cart", userAuth, cartController.viewCart);
 
 
 module.exports = router

@@ -1,62 +1,72 @@
 const User = require("../../models/userSchema");
 const Product = require("../../models/productSchema");
-const mongoose = require("mongoose");
+const Cart = require("../../models/cartSchema");
 
-
-
-const getCartPage = async (req, res) => {
+const viewCart = async (req, res) => {
     try {
-        const id = req.session.user.id;
-        const user = await User.findOne({_id: id});
-        if (!user) return res.redirect("/login");
-
-        const productIds = user.cart?.map((item) => item.productId) || [];
-        const products = await Product.find({_id: {$in: productIds}});
-        const oid = new mongoose.Types.ObjectId(id);
-
-        let data = await User.aggregate([
-            {$match: {_id: oid}},
-            {$unwind: "$cart"},
-            {
-                $project: {
-                    prold: "$cart.productId",
-                    quantity: "$cart.quantity",
-                }
-            },
-            {
-                $lookup: {
-                    from: "products",
-                    localField: "prold",
-                    foreignField: "_id",
-                    as: "productDetails",
-                },
-            },
-        ]);
-
-        let quantity = user.cart.reduce((sum, item) => sum + item.quantity, 0);
-
-        let grandTotal = 0;
-        for (let i = 0; i < data.length; i++) {
-            if (data[i].productDetails.length > 0) { // Prevent errors if product doesn't exist
-                grandTotal += data[i].productDetails[0].salePrice * data[i].quantity;
-            }
+        if (!req.session.user || !req.session.user.id) {
+            return res.redirect("/login"); // Redirect if user not logged in
         }
-        req.session.grandTotal = grandTotal;
 
-        res.render("cart", {
-            user,
-            quantity,
-            data,
-            grandTotal,
+        const userId = req.session.user.id;
+        const cart = await Cart.findOne({ user: userId }).populate("items.productId");
+
+        if (!cart || cart.items.length === 0) {
+            return res.render("cart", { 
+                data: [], 
+                grandTotal: 0, 
+                user: req.session.user, // Pass the user object
+                message: "Your cart is empty." 
+            });
+        }
+
+        let grandTotal = 0; // Initialize grand total
+
+        const formattedCart = cart.items.map(item => {
+            const product = item.productId;
+
+            if (!product) {
+                console.warn(`Product not found for cart item: ${item._id}`);
+                return null; // Skip invalid items
+            }
+
+            const totalPrice = product.salePrice * item.quantity;
+            grandTotal += totalPrice; // Add to grand total
+
+            return {
+                cartId: cart._id,
+                productId: product._id,
+                name: product.name,
+                image: product.image,
+                size: item.size, // Size from cart item
+                quantity: item.quantity,
+                price: product.salePrice,
+                totalPrice,
+                status: item.status,
+                isOutOfStock: product.stock < item.quantity
+            };
+        }).filter(item => item !== null); // Remove null values
+
+        res.render("cart", { 
+            data: formattedCart, 
+            grandTotal, 
+            user: req.session.user, // Pass the user object
+            message: "" 
         });
+
     } catch (error) {
         console.error("Error fetching cart:", error);
-        res.redirect("/pageNotFound");
+        res.status(500).render("cart", { 
+            data: [], 
+            grandTotal: 0, 
+            user: req.session.user, // Ensure user is still passed
+            message: "Internal server error." 
+        });
     }
 };
 
 
-module.exports = {
-    getCartPage,
 
+module.exports = {
+    viewCart,
 }

@@ -38,12 +38,13 @@ const productDetails = async (req, res) => {
 
         // Calculate sale price for each size dynamically
         const sizePrices = sizes.reduce((acc, size) => {
-            const numericSize = parseInt(size, 10);
+            const numericSize = parseInt(size, 10); // Convert size to number
             if (!isNaN(numericSize)) {
-                acc[size] = basePrice + (numericSize - baseSize) * 200;
+                acc[size] = numericSize >= baseSize ? basePrice + (numericSize - baseSize) * 200 : basePrice;
             }
             return acc;
         }, {});
+        
 
         res.render("product-details", {
             user: userData,

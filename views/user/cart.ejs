@@ -3,7 +3,7 @@
     <div class="page-header breadcrumb-wrap">
         <div class="container">
             <div class="breadcrumb">
-                <a href="index.html" rel="nofollow">Home</a>
+                <a href="#" rel="nofollow">Home</a>
                 <span></span> Shop
                 <span></span> Your Cart
             </div>
@@ -47,7 +47,7 @@
                                                     </p>
                                                 </td>
                                                 <td class="price" data-title="Price">₹<span> <text
-                                                            id="subTotal<%= data[i].productDetails[0].id %>">
+                                                            id="subTotal<%= data[i].productDetails[0]._id %>">
                                                             <%= data[i].productDetails[0].salePrice * data[i].quantity %>
                                                         </text><br>
                                                         <small class="text-muted text-nowrap">₹<span id="price">
@@ -69,16 +69,16 @@
 
                                                                     
                                                                     <button class="btn btn-sm increment-button"
-                                                                        onclick="changeQuantity('<%= data[i].productDetails[0]._id %>', '<%= data[i].quantity %>', 1, '<%= data[i].productDetails[0].salePrice %>',  '<%= data[i].productDetails[0].id %>', '<%= data[i].productDetails[0].quantity%>')">+</button>
+                                                                        onclick="changeQuantity('<%= data[i].productDetails[0]._id %>', '<%= data[i].quantity %>', 1, '<%= data[i].productDetails[0].salePrice %>',  '<%= data[i].productDetails[0]._id %>', '<%= data[i].productDetails[0].quantity%>')">+</button>
 
 
                                                                     <input class="quantity-input"
-                                                                        id="cartProductQuantity<%= data[i].productDetails[0].id %>"
+                                                                        id="cartProductQuantity<%= data[i].productDetails[0]._id %>"
                                                                         value="<%= data[i].quantity %>"
                                                                         style="width: 45px;" type="text" readonly
                                                                         value="">
                                                                     <button class="btn btn-sm decrement-button"
-                                                                        onclick="changeQuantity('<%= data[i].productDetails[0]._id %>', '<%= data[i].quantity %>', -1, '<%= data[i].productDetails[0].salePrice %>',  '<%= data[i].productDetails[0].id %>', '<%= data[i].productDetails[0].quantity%>')">-</button>
+                                                                        onclick="changeQuantity('<%= data[i].productDetails[0]._id %>', '<%= data[i].quantity %>', -1, '<%= data[i].productDetails[0].salePrice %>',  '<%= data[i].productDetails[0]._id %>', '<%= data[i].productDetails[0].quantity%>')">-</button>
 
                                                                 </div>
                                                             </div>
@@ -122,18 +122,22 @@
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td class="cart_total_label">Total</td>
-                                        <td class="cart_total_amount"><span class="font-lg fw-900 text-brand">₹
+                                        <td class="cart_total_label">Grand Total</td>
+                                        <td class="cart_total_amount">
+                                            <span class="font-lg fw-900 text-brand">₹
                                                 <text id="total">
                                                     <%= grandTotal %>
                                                 </text>
-                                            </span></td>
+                                            </span>
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
-                        <a href="/checkout?userId=<%= user._id %>" class="btn "> <i class="fi-rs-box-alt mr-10"></i>
-                            Proceed To CheckOut</a>
+                        <a href="/checkout?userId=<%= user._id %>" class="btn">
+                            <i class="fi-rs-box-alt mr-10"></i>
+                            Proceed To Checkout
+                        </a>
                     </div>
                 </div>
 
@@ -148,15 +152,13 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     function changeQuantity(productId, cartQuantity, count, productPrice, i, productQuantity) {
-        const abc = document.getElementById("totalabc").value
-        const cartProductQuantityElement = document.querySelector(`#cartProductQuantity${i}`)
+        const cartProductQuantityElement = document.querySelector(`#cartProductQuantity${i}`);
         const subtotalElement = document.querySelector(`#subTotal${i}`);
-        const totalElements = document.getElementById('total').innerHTML;
+        let currentQuantity = parseInt(cartProductQuantityElement.value);
 
-        let currentQuantity = parseInt(cartProductQuantityElement.value)
-        const currentSubTotal = parseInt(subtotalElement.innerHTML);           
+        const newQuantity = currentQuantity + count;
 
-        if (currentQuantity + count > 3) {
+        if (newQuantity > 3) {
             Swal.fire({
                 title: 'Limit Exceeded!',
                 text: 'You can only add up to 3 items to your cart.',
@@ -165,32 +167,21 @@
             });
             return;
         }
-        
-        const newQuantity = currentQuantity + count
 
-        if (count === -1 && newQuantity < 1) {
-            return; 
+        if (newQuantity < 1) {
+            return;
         }
 
-        if(currentSubTotal < currentSubTotal){
-            return
-        }
         if (count == 1 && newQuantity > productQuantity) {
             Swal.fire({
-                title: 'STOCK!',
-                text: 'Product is out of stock.',
+                title: 'Out of Stock!',
+                text: 'This product is out of stock.',
                 icon: 'error',
                 timer: 5000
-            })
-            return
+            });
+            return;
         }
 
-        const newSubtotal = newQuantity * productPrice
-        if (count == 1) {
-            document.getElementById(`subTotal${i}`).innerHTML = parseInt(subtotalElement.innerHTML) + parseInt(productPrice)
-        } else {
-            document.getElementById(`subTotal${i}`).innerHTML = parseInt(subtotalElement.innerHTML) - parseInt(productPrice)
-        }
         $.ajax({
             url: '/changeQuantity',
             method: 'POST',
@@ -199,25 +190,20 @@
                 quantity: newQuantity,
                 count: count
             },
-
             success: (response) => {
-                let currentQuantity = parseInt(cartProductQuantityElement.value)
-                let currentSubTotal = parseInt(subtotalElement.value)
-
-                document.getElementById(`cartProductQuantity${i}`).value = currentQuantity + count
-                document.getElementById(`subTotal${i}`).value = currentSubTotal * count
-                
-                if (response.count == 1) {
-                    document.getElementById(`total`).innerHTML =  parseInt(response.grandTotal)
-                } else {
-                    document.getElementById(`total`).innerHTML = parseInt(response.grandTotal)
-                }
-
+                cartProductQuantityElement.value = newQuantity;
+                subtotalElement.innerHTML = newQuantity * productPrice;
+                document.getElementById('total').innerHTML = response.grandTotal;
             },
             error: (error) => {
-                // Handle error
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Could not update quantity. Try again.',
+                    icon: 'error',
+                    timer: 5000
+                });
             }
-        })
+        });
     }
 
     function confirmRemove(productId) {
@@ -231,10 +217,19 @@
             confirmButtonText: 'Yes, remove it!'
         }).then((result) => {
             if (result.isConfirmed) {
-                window.location.href = `/deleteItem?id=${productId}`;
+                $.ajax({
+                    url: '/deleteItem',
+                    method: 'POST',
+                    data: { id: productId },
+                    success: function(response) {
+                        Swal.fire('Deleted!', 'The product has been removed.', 'success');
+                        location.reload();
+                    },
+                    error: function() {
+                        Swal.fire('Error!', 'Failed to remove item.', 'error');
+                    }
+                });
             }
-        })
+        });
     }
 </script>
-<%- include("../../views/partials/user/footer") %>
-

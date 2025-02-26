@@ -152,7 +152,34 @@
         </div>
     </section>
 </main>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const sizeButtons = document.querySelectorAll(".size-btn");
+    const selectedSizeInput = document.getElementById("selectedSize");
+    const dynamicSalePrice = document.getElementById("dynamicSalePrice");
 
+    let basePrice = parseFloat(dynamicSalePrice.innerText.replace("₹", "").trim());
+    const baseSize = 6;
+
+    sizeButtons.forEach(button => {
+        button.addEventListener("click", function () {
+            sizeButtons.forEach(btn => btn.classList.remove("active"));
+            this.classList.add("active");
+
+
+            const selectedSize = parseInt(this.getAttribute("data-size"));
+            
+
+            let priceIncrease = (selectedSize > baseSize) ? (selectedSize - baseSize) * 200 : 0;
+            let updatedPrice = basePrice + priceIncrease;
+
+            selectedSizeInput.value = selectedSize;
+            dynamicSalePrice.innerText = `${updatedPrice}`;
+        });
+    });
+});
+
+</script>
 <%- include("../../views/partials/user/footer") %>
 
 
