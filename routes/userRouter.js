@@ -85,4 +85,8 @@ router.post("/addToCart",cartController.addToCart);
 router.post("/changeQuantity", cartController.changeQuantity);
 router.post('/removeProduct', cartController.removeProductFromCart);
 
+//Order Management
+
+
+
 module.exports = router

@@ -71,7 +71,7 @@
                                                     <div class="quantity-control">
                                                         <!-- Increment Button -->
                                                         <button class="btn btn-sm increment-button"
-                                                        onclick="changeQuantity('<%= data[i].cartId %>', '<%= data[i].productId %>', 1, <%= Number(data[i].price) %>, <%= Number(data[i].stock) %>, <%= i %>)">
+                                                        onclick="changeQuantity('<%= data[i].cartId %>', '<%= data[i].productId %>', 1, '<%= Number(data[i].price) %>', '<%= Number(data[i].status) %>' , '<%= i %>')">
                                                             +
                                                         </button>
                                             
@@ -83,7 +83,7 @@
                                             
                                                         <!-- Decrement Button -->
                                                         <button class="btn btn-sm decrement-button"
-                                                            onclick="changeQuantity('<%= data[i].cartId %>', '<%= data[i].productId %>', -1, <%= Number(data[i].price) %>, <%= Number(data[i].stock) %>, <%= i %>)">
+                                                            onclick="changeQuantity('<%= data[i].cartId %>', '<%= data[i].productId %>', -1, '<%= Number(data[i].price) %>', '<%= Number(data[i].status) %>','<%= i %>' )">
                                                             -
                                                         </button>
                                                     </div>
@@ -97,7 +97,7 @@
                                             </td>                                                                                    
                                             <td class="action" data-title="Remove">
                                                 <a class="btn btn-sm"
-                                                    href="#" onclick="confirmRemove('<%= data[i].cartId %>', '<%= data[i].productId %>', <%= i %>)">
+                                                    href="#" onclick="confirmRemove('<%= data[i].cartId %>', '<%= data[i].productId %>', '<%= i %>')">
                                                     <i class="fi-rs-trash"></i>
                                                 </a>
                                             </td>                                                                                      
@@ -268,7 +268,7 @@ function removeFromCart(cartId, productId, index) {
             } else {
                 Swal.fire({
                     title: 'Error!',
-                    text: response.error || 'Could not remove product. Try again.',
+                    text: 'Could not remove product. Try again.',
                     icon: 'error',
                     timer: 3000
                 });
