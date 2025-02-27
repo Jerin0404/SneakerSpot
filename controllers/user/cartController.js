@@ -1,7 +1,6 @@
 const User = require("../../models/userSchema");
 const Product = require("../../models/productSchema");
 const Cart = require("../../models/cartSchema");
-const mongoose = require("mongoose");
 
 const viewCart = async (req, res) => {
     try {
@@ -43,7 +42,7 @@ const viewCart = async (req, res) => {
                 image: product.productImage && product.productImage.length > 0 ? product.productImage[0] : "default.jpg",
                 category: product.category || "Unknown Category",
                 brand: product.brand || "Unknown Brand",
-                size: item.size,
+                size: item.size || "Not Specified", // Include size
                 quantity: item.quantity,
                 price: product.salePrice,
                 totalPrice,
@@ -69,6 +68,7 @@ const viewCart = async (req, res) => {
         });
     }
 };
+
 
 
 
@@ -132,8 +132,64 @@ const addToCart = async (req, res) => {
 };
 
 
+const changeQuantity = async (req, res) => {
+    const { cartId, productId, quantity } = req.body;
+
+    try {
+        const product = await Product.findById(productId);
+
+        if (!product) {
+            return res.json({ success: false, error: "Product not found!" });
+        }
+
+        await Cart.updateOne({ _id: cartId, "items.productId": productId }, {
+            $set: { "items.$.quantity": quantity }
+        });
+
+
+        const updatedCart = await Cart.findById(cartId);
+        const grandTotal = updatedCart.items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+
+        res.json({ success: true, grandTotal });
+
+    } catch (error) {
+        console.error("Error updating quantity:", error);
+        res.status(500).json({ success: false, error: "Server error!" });
+    }
+}
+
+const removeProductFromCart = async (req, res) => {
+    const { cartId, productId } = req.body;
+    
+    try {
+        let cart = await Cart.findById(cartId);
+        if (!cart) {
+            console.log("Cart not found");
+            return res.json({ success: false, error: "Cart not found!" });
+        }
+
+        // Remove the product
+        cart.items = cart.items.filter(item => item.productId.toString() !== productId);
+
+        let grandTotal = cart.items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+
+        await cart.save();
+
+        console.log("Product removed successfully. New total:", grandTotal);
+
+        return res.json({ success: true, grandTotal });
+
+    } catch (error) {
+        console.error("Error removing product from cart:", error);
+        res.status(500).json({ success: false, error: "Server error!" });
+    }
+};
+
+
 
 module.exports = {
     viewCart,
     addToCart,
+    changeQuantity,
+    removeProductFromCart,
 }
