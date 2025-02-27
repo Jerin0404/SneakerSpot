@@ -24,7 +24,6 @@ const productDetails = async (req, res) => {
         const productOffer = product.productOffer || 0;
         const totalOffer = categoryOffer + productOffer;
 
-        // Ensure sizes are properly formatted
         let sizes = [];
         if (Array.isArray(product.sizes)) {
             sizes = product.sizes.flatMap(size => 
@@ -32,13 +31,11 @@ const productDetails = async (req, res) => {
             ).map(size => size.trim());
         }
 
-        // Define the base price and base size
-        const basePrice = product.basePrice || 0; // Ensure a default base price exists
-        const baseSize = Math.min(...sizes.map(size => parseInt(size, 10))); // Get the smallest size
+        const basePrice = product.basePrice || 0;
+        const baseSize = Math.min(...sizes.map(size => parseInt(size, 10)));
 
-        // Calculate sale price for each size dynamically
         const sizePrices = sizes.reduce((acc, size) => {
-            const numericSize = parseInt(size, 10); // Convert size to number
+            const numericSize = parseInt(size, 10);
             if (!isNaN(numericSize)) {
                 acc[size] = numericSize >= baseSize ? basePrice + (numericSize - baseSize) * 200 : basePrice;
             }
@@ -58,8 +55,6 @@ const productDetails = async (req, res) => {
         res.redirect("/pageNotFound");
     }
 };
-
-
 
 
 module.exports = {

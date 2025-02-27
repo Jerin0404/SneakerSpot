@@ -32,8 +32,8 @@
 
                                         <tr>
                                             <td class="image product-thumbnail">
-                                                <% if (data[i].productId && data[i].productId.image && data[i].productId.image.length > 0) { %>
-                                                    <img src="/uploads/re-image/<%= data[i].productId.image[0] %>" alt="Product Image">
+                                                <% if (data[i].image && data[i].image.length > 0) { %>
+                                                    <img src="/uploads/re-image/<%= data[i].image %>" alt="Product Image">
                                                 <% } else { %>
                                                     <img src="/uploads/default-image.jpg" alt="No Image Available">
                                                 <% } %>
@@ -41,7 +41,7 @@
                                             <td class="product-des product-name">
                                                 <h5 class="product-name">
                                                     <a href="cart">
-                                                        <%= data[i].name ? data[i].name : 'Product Name Not Available' %>
+                                                        <%= data[i].productName ? data[i].productName : 'Product Name Not Available' %>
                                                     </a>
                                                 </h5>
                                                 <p class="font-xs">
@@ -148,7 +148,7 @@
 
         const newQuantity = currentQuantity + count;
 
-        if (newQuantity > 3) {
+        if (newQuantity > 10) {
             Swal.fire({
                 title: 'Limit Exceeded!',
                 text: 'You can only add up to 3 items to your cart.',

@@ -133,7 +133,9 @@
                                             <a href="#" class="qty-up"><i class="fi-rs-angle-small-up"></i></a>
                                         </div>
                                         <div class="product-extra-link2">
-                                            <button type="submit" class="button button-add-to-cart" id="addToCartBtn">Add to cart</button>
+                                            <button type="button" class="button button-add-to-cart" id="addToCartBtn" data-product-id="<%= product._id %>">
+                                                Add to Cart
+                                            </button>
                                             <button type="submit" class="button button-buy-now" id="buyNowBtn">Buy Now</button>
                                         </div>
                                     </div>
@@ -152,29 +154,61 @@
         </div>
     </section>
 </main>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+
 document.addEventListener("DOMContentLoaded", function () {
     const sizeButtons = document.querySelectorAll(".size-btn");
     const selectedSizeInput = document.getElementById("selectedSize");
     const dynamicSalePrice = document.getElementById("dynamicSalePrice");
+    const addToCartBtn = document.getElementById("addToCartBtn");
 
     let basePrice = parseFloat(dynamicSalePrice.innerText.replace("₹", "").trim());
     const baseSize = 6;
+    let selectedSize = null;
+    let selectedPrice = basePrice;
 
     sizeButtons.forEach(button => {
         button.addEventListener("click", function () {
             sizeButtons.forEach(btn => btn.classList.remove("active"));
             this.classList.add("active");
 
-
-            const selectedSize = parseInt(this.getAttribute("data-size"));
-            
-
+            selectedSize = parseInt(this.getAttribute("data-size"));
             let priceIncrease = (selectedSize > baseSize) ? (selectedSize - baseSize) * 200 : 0;
-            let updatedPrice = basePrice + priceIncrease;
+            selectedPrice = basePrice + priceIncrease;
 
             selectedSizeInput.value = selectedSize;
-            dynamicSalePrice.innerText = `${updatedPrice}`;
+            dynamicSalePrice.innerText = `₹${selectedPrice}`;
+        });
+    });
+
+    // Send the correct size and price to the cart
+    addToCartBtn.addEventListener("click", function () {
+        const productId = this.getAttribute("data-product-id");
+
+        if (!selectedSize) {
+            Swal.fire("Error!", "Please select a size", "error");
+            return;
+        }
+
+        fetch("/addToCart", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ productId, size: selectedSize, price: selectedPrice })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status) {
+                Swal.fire("Success!", "Added to cart successfully", "success").then(() => {
+                    window.location.reload(); // Reload the page to update the cart
+                });
+            } else {
+                Swal.fire("Error!", data.message || "Something went wrong", "error");
+            }
+        })
+        .catch(error => {
+            console.error("Fetch error:", error);
+            Swal.fire("Error!", "Server error occurred", "error");
         });
     });
 });
