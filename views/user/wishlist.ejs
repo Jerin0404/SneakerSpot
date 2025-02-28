@@ -49,8 +49,10 @@
                                                 <%= product.salePrice %>
                                             </span></td>
                                             <td class="text-center" data-title="Add to Cart">
-                                                <a href="/addToCart?productId=<%= product._id %>" class="btn btn-sm btn-primary">Add to Cart</a>
-                                            </td>
+                                                <button class="btn btn-sm btn-primary" onclick="addToCart('<%= product._id %>', this)">
+                                                    Add to Cart
+                                                </button>
+                                            </td>                                            
                                             <td class="action" data-title="Remove">
                                                 <button class="btn btn-sm btn-danger" onclick="confirmRemove('<%= product._id %>')">
                                                     <i class="fi-rs-trash"></i>
@@ -91,4 +93,43 @@
             }
         });
     }
+    function addToCart(productId, button) {
+    fetch('/addToCart', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ productId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status) {
+            const row = button.closest('tr');
+            row.remove();
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: data.message,
+                timer: 2000,
+                showConfirmButton: false
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: data.message,
+            });
+        }
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: 'Something went wrong. Please try again.',
+        });
+    });
+}
+
 </script>

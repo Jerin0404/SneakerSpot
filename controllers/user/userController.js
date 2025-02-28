@@ -285,8 +285,8 @@ const logout = async (req, res) => {
 
 const loadShoppingPage = async (req, res) => {
     try {
-        let categories = await Category.find({});
-        let brands = await Brand.find({});
+        let categories = await Category.find({isListed: true});
+        let brands = await Brand.find({isBlocked: false});
 
         const { search, sort, categories: categoryQuery, brands: brandQuery, sizes, minPrice, maxPrice, page = 1 } = req.query;
         const limit = 12;

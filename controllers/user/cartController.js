@@ -5,10 +5,12 @@ const Cart = require("../../models/cartSchema");
 const viewCart = async (req, res) => {
     try {
         if (!req.session.user || !req.session.user.id) {
+            console.error("User not found in session");
             return res.redirect("/login");
         }
 
         const userId = req.session.user.id;
+
         const cart = await Cart.findOne({ userId })
             .populate("items.productId", "name productImage salePrice stock category brand");
 
@@ -17,32 +19,27 @@ const viewCart = async (req, res) => {
                 data: [],
                 grandTotal: 0,
                 user: req.session.user,
+                userId,
                 message: "Your cart is empty."
             });
         }
 
         let grandTotal = 0;
-
         let formattedCart = cart.items.map(item => {
             const product = item.productId;
-
-            if (!product) {
-                console.warn(`Product not found for cart item: ${item._id}`);
-                return null;
-            }
+            if (!product) return null;
 
             const totalPrice = product.salePrice * item.quantity;
             grandTotal += totalPrice;
 
             return {
                 cartId: cart._id,
-                productDetails: [product],
                 productId: product._id,
                 name: product.name || "No Name Available",
-                image: product.productImage && product.productImage.length > 0 ? product.productImage[0] : "default.jpg",
+                image: product.productImage?.[0] || "default.jpg",
                 category: product.category || "Unknown Category",
                 brand: product.brand || "Unknown Brand",
-                size: item.size || "Not Specified", // Include size
+                size: item.size || "Not Specified",
                 quantity: item.quantity,
                 price: product.salePrice,
                 totalPrice,
@@ -52,6 +49,7 @@ const viewCart = async (req, res) => {
         }).filter(item => item !== null);
 
         res.render("cart", {
+            userId,
             data: formattedCart,
             grandTotal,
             user: req.session.user,
@@ -70,17 +68,19 @@ const viewCart = async (req, res) => {
 };
 
 
-
-
-
 const addToCart = async (req, res) => {
     try {
-        const { productId, quantity = 1, size } = req.body;
+        console.log("req.body", req.body);
+        console.log("req.session", req.session);
 
-        const userId = req.session.user.id;
-        if (!userId) {
+        if (!req.session || !req.session.user) {
             return res.status(401).json({ status: false, message: "User not authenticated" });
         }
+
+        const userId = req.session.user.id;
+        console.log("User ID:", userId);
+
+        const { productId, quantity = 1, size } = req.body;
 
         if (!productId) {
             return res.status(400).json({ status: false, message: "Product ID is required" });
@@ -97,7 +97,6 @@ const addToCart = async (req, res) => {
             productPrice += sizeIncrease;
         }
 
-
         let cart = await Cart.findOne({ userId });
 
         if (!cart) {
@@ -109,9 +108,9 @@ const addToCart = async (req, res) => {
         );
 
         if (existingItemIndex > -1) {
-            const existingItem = cart.items[existingItemIndex];
-            existingItem.quantity += quantity;
-            existingItem.totalPrice = existingItem.quantity * existingItem.price;
+            cart.items[existingItemIndex].quantity += quantity;
+            cart.items[existingItemIndex].totalPrice =
+                cart.items[existingItemIndex].quantity * cart.items[existingItemIndex].price;
         } else {
             cart.items.push({
                 productId,
@@ -124,12 +123,19 @@ const addToCart = async (req, res) => {
 
         await cart.save();
 
-        return res.status(200).json({ status: true, message: "Added to cart successfully", cart });
+        await User.findByIdAndUpdate(userId, { $addToSet: { cart: cart._id } });
+        await User.findByIdAndUpdate(userId, {
+            $pull: { wishlist: productId }
+        });
+
+        return res.status(200).json({ status: true, message: "Added to cart successfully and removed from wishlist", cart });
     } catch (error) {
         console.error("Error adding to cart:", error);
         return res.status(500).json({ status: false, message: "Internal server error", error: error.message });
     }
 };
+
+
 
 
 const changeQuantity = async (req, res) => {
@@ -168,7 +174,6 @@ const removeProductFromCart = async (req, res) => {
             return res.json({ success: false, error: "Cart not found!" });
         }
 
-        // Remove the product
         cart.items = cart.items.filter(item => item.productId.toString() !== productId);
 
         let grandTotal = cart.items.reduce((sum, item) => sum + (item.quantity * item.price), 0);

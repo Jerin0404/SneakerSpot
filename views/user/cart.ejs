@@ -1,4 +1,31 @@
 <%- include("../../views/partials/user/header") %>
+<style>
+    .checkout-btn {
+        display: inline-block;
+        padding: 12px 20px;
+        font-size: 16px;
+        font-weight: bold;
+        color: #fff;
+        background-color: #ff4500;
+        border: none;
+        border-radius: 8px;
+        text-decoration: none;
+        text-align: center;
+        transition: background 0.3s ease, transform 0.2s ease;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .checkout-btn:hover {
+        background-color: #e63e00;
+        transform: scale(1.05);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .checkout-btn i {
+        margin-right: 8px;
+    }
+</style>
+
 <main class="main">
     <div class="page-header breadcrumb-wrap">
         <div class="container">
@@ -140,9 +167,8 @@
                                 </tbody>
                             </table>
                         </div>
-                        <a href="/checkout?userId=<%= user._id %>" class="btn">
-                            <i class="fi-rs-box-alt mr-10"></i>
-                            Proceed To Checkout
+                        <a id="checkoutLink" href="#" class="btn btn-primary checkout-btn">
+                            <i class="fas fa-shopping-cart"></i> Proceed to Checkout
                         </a>
                     </div>
                 </div>
@@ -150,6 +176,18 @@
         </div>
     </section>
 </main>
+<script>
+    const userId = "<%= userId %>";
+    console.log("User ID in frontend (cart.ejs):", userId);
+
+    if (userId) {
+        document.getElementById("checkoutLink").href = "/checkout?userId=" + userId;
+    } else {
+        console.error("User ID is missing in EJS template!");
+    }
+</script>
+
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>

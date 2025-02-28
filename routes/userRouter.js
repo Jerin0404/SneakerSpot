@@ -8,6 +8,7 @@ const cartController = require("../controllers/user/cartController")
 const { userAuth } = require("../middlewares/auth");
 const wishlistController = require("../controllers/user/wishlistController");
 const addressController = require("../controllers/user/addressController");
+const orderController = require("../controllers/user/orderController")
 //Error Management
 router.get("/pageNotFound", userController.pageNotFound);
 
@@ -86,7 +87,7 @@ router.post("/changeQuantity", cartController.changeQuantity);
 router.post('/removeProduct', cartController.removeProductFromCart);
 
 //Order Management
-
+router.get("/checkout", userAuth, orderController.getCheckoutPage)
 
 
 module.exports = router
