@@ -24,9 +24,10 @@ const login = async (req, res) => {
             const passwordMatch = await bcrypt.compare(password, admin.password);
 
             if (passwordMatch) {
-                req.session.admin = true;
-                req.session.user = null;
-                return res.redirect(302, "/admin");
+                // Store admin details in session
+                req.session.admin = { _id: admin._id, isAdmin: true };
+                
+                return res.redirect(302, "/admin/dashboard"); // Redirect to dashboard
             } else {
                 req.session.message = "Incorrect password";
                 return res.redirect(302, "/admin/login");
@@ -41,16 +42,22 @@ const login = async (req, res) => {
     }
 };
 
+
+
 const loadDashboard = async (req, res) => {
     if (!req.session.admin) {
         return res.redirect(302, "/admin/login");
     }
     try {
-        res.render("dashboard");
+        res.render("dashboard"); // Ensure this file exists in your views folder
     } catch (error) {
+        console.error("Dashboard Load Error:", error);
         res.redirect(302, "/admin/pageerror");
     }
 };
+
+
+
 
 const logout = async (req, res) => {
     try {
@@ -66,6 +73,7 @@ const logout = async (req, res) => {
         res.redirect(302, "/admin/pageerror");
     }
 };
+
 
 module.exports = {
     loadLogin,

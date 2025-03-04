@@ -64,7 +64,6 @@ const addProducts = async (req, res) => {
                     sizes = productData.sizes;
                 }
 
-                console.log("Parsed sizes:", sizes);
 
                 productsToInsert.push({
                     productName: productData.productName,
@@ -247,12 +246,10 @@ const editProduct = async (req, res) => {
             salePrice:data.salePrice,
             quantity:data.quantity,
             size:data.size,
-            color:data.color
         }
         if(req.files.length > 0) {
             updateFields.$push = {productImage:{$each:images}};
         }
-        console.log("update",updateFields);
 
         await Product.findByIdAndUpdate(id,updateFields, {new: true});
         res.redirect("/admin/products");

@@ -12,7 +12,15 @@ const viewCart = async (req, res) => {
         const userId = req.session.user.id;
 
         const cart = await Cart.findOne({ userId })
-            .populate("items.productId", "name productImage salePrice stock category brand");
+            .populate({
+            path: "items.productId",
+            select: "name productImage salePrice stock category brand",
+                populate: [
+                    { path: "category", select: "name" },  
+                    { path: "brand", select: "name" }  
+                ]
+        });
+
 
         if (!cart || cart.items.length === 0) {
             return res.render("cart", {
@@ -37,8 +45,8 @@ const viewCart = async (req, res) => {
                 productId: product._id,
                 name: product.name || "No Name Available",
                 image: product.productImage?.[0] || "default.jpg",
-                category: product.category || "Unknown Category",
-                brand: product.brand || "Unknown Brand",
+                category: product.category?.name || "Unknown Category",
+                brand: product.brand?.name || "Unknown Brand",
                 size: item.size || "Not Specified",
                 quantity: item.quantity,
                 price: product.salePrice,
@@ -66,6 +74,7 @@ const viewCart = async (req, res) => {
         });
     }
 };
+
 
 
 const addToCart = async (req, res) => {

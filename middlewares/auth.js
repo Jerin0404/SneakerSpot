@@ -26,19 +26,14 @@ const userAuth = (req, res, next) => {
 };
 
 const adminAuth = (req, res, next) => {
-    User.findOne({isAdmin:true})
-    .then(data=> {
-        if(data) {
-            next();
-        }else {
-            res.redirect("/admin/login")
-        }
-    })
-    .catch(error => {
-        console.log("Error in adminauth middleware", error);
-        res.status(500).send("Internal Server Error");
-    })
-}
+    if (req.session && req.session.admin) {
+        return next(); // Admin is authenticated, proceed
+    }
+    return res.redirect("/admin/login"); // Redirect if not authenticated
+};
+
+
+
 
 const checkBlockedUser = async (req, res, next) => {
     if (req.session.user) {

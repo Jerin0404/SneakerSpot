@@ -67,15 +67,14 @@
                                             <td class="product-des product-name">
                                                 <h5 class="product-name">
                                                     <a href="cart">
-                                                        <%= data[i].name ? data[i].name : 'Product Name Not Available' %>
+                                                        <%= data[i].name && data[i].name !== "No Name Available" ? data[i].name : 'Product Name Not Available' %>
                                                     </a>
                                                 </h5>
                                                 <p class="font-xs">
                                                     <%= data[i].category ? data[i].category + '<br />' : 'Category Not Available<br />' %>
                                                     <%= data[i].brand ? data[i].brand : 'Brand Not Available' %>
                                                 </p>
-                                            </td>
-                                            
+                                            </td>                                           
                                             <!-- Display Size Here -->
                                             <td class="size">
                                                 <%= data[i].size ? data[i].size : 'Not Specified' %>

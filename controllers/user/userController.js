@@ -1,4 +1,4 @@
-const mongoose  = require("mongoose");
+const mongoose = require("mongoose");
 const User = require("../../models/userSchema");
 const Category = require("../../models/categorySchema");
 const Product = require("../../models/productSchema");
@@ -65,11 +65,11 @@ const loadSignup = async (req, res) => {
     }
 }
 
-function generateOtp () {
+function generateOtp() {
     return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-async function sendVerificationEmail (email, otp) {
+async function sendVerificationEmail(email, otp) {
     try {
         const transporter = nodemailer.createTransport({
             service: 'gmail',
@@ -77,17 +77,17 @@ async function sendVerificationEmail (email, otp) {
             secure: false,
             requireTLS: true,
             auth: {
-                user:process.env.NODEMAILER_EMAIL,
-                pass:process.env.NODEMAILER_PASSWORD
+                user: process.env.NODEMAILER_EMAIL,
+                pass: process.env.NODEMAILER_PASSWORD
             }
         })
 
         const info = await transporter.sendMail({
-            from:process.env.NODEMAILER_EMAIL,
+            from: process.env.NODEMAILER_EMAIL,
             to: email,
             subject: "Veriy your account",
             text: `Your OTP is ${otp}`,
-            html:`<b>Your OTP: ${otp}</b>`,
+            html: `<b>Your OTP: ${otp}</b>`,
         })
 
         return info.accepted.length > 0
@@ -99,24 +99,24 @@ async function sendVerificationEmail (email, otp) {
 
 const signup = async (req, res) => {
     try {
-        const {name, phone, email, password, cPassword} = req.body;
+        const { name, phone, email, password, cPassword } = req.body;
 
-        if(password !== cPassword) {
-            return res.render("signup", {message: "Password do not match"});
+        if (password !== cPassword) {
+            return res.render("signup", { message: "Password do not match" });
         }
-        const findUser = await User.findOne({email});
-        if(findUser) {
-            return res.render("signup", {message: "User with this email already exist"});
+        const findUser = await User.findOne({ email });
+        if (findUser) {
+            return res.render("signup", { message: "User with this email already exist" });
         }
 
         const otp = generateOtp();
         const emailSent = await sendVerificationEmail(email, otp);
-        if(!emailSent) {
+        if (!emailSent) {
             return res.json("email-error")
         }
 
         req.session.userOtp = otp;
-        req.session.userData = {name, phone, email, password};
+        req.session.userData = { name, phone, email, password };
 
         res.render("verify-otp");
         console.log("OTP Sent", otp);
@@ -133,7 +133,7 @@ const securePassword = async (password) => {
         return passwordHash;
 
     } catch (error) {
-        
+
     }
 }
 
@@ -285,8 +285,8 @@ const logout = async (req, res) => {
 
 const loadShoppingPage = async (req, res) => {
     try {
-        let categories = await Category.find({isListed: true});
-        let brands = await Brand.find({isBlocked: false});
+        let categories = await Category.find({ isListed: true });
+        let brands = await Brand.find({ isBlocked: false });
 
         const { search, sort, categories: categoryQuery, brands: brandQuery, sizes, minPrice, maxPrice, page = 1 } = req.query;
         const limit = 12;
