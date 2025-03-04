@@ -20,3 +20,58 @@
     </div>
 </div>
 <%- include("../../views/partials/admin/footer") %>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.querySelector("form");
+
+    form.addEventListener("submit", async function (event) {
+        event.preventDefault();
+
+        const categoryId = "<%= category._id %>";
+        const actionUrl = `/admin/editCategory/${categoryId}`;
+
+        const formData = new FormData(form);
+        const jsonData = {};
+        formData.forEach((value, key) => { jsonData[key] = value; });
+
+        try {
+            const response = await fetch(actionUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(jsonData)
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {  
+                Swal.fire({
+                    icon: "error",
+                    title: "Oops...",
+                    text: data.error || "Something went wrong!"
+                });
+            } else {  
+                Swal.fire({
+                    icon: "success",
+                    title: "Success!",
+                    text: data.success,
+                    confirmButtonText: "OK"
+                }).then(() => {
+                    window.location.href = "/admin/category"; 
+                });
+            }
+        } catch (error) {
+            console.error("Fetch error:", error);
+            Swal.fire({
+                icon: "error",
+                title: "Error!",
+                text: "Failed to update the category. Please try again."
+            });
+        }
+    });
+});
+</script>
+
+

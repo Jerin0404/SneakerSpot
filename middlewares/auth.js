@@ -27,9 +27,9 @@ const userAuth = (req, res, next) => {
 
 const adminAuth = (req, res, next) => {
     if (req.session && req.session.admin) {
-        return next(); // Admin is authenticated, proceed
+        return next();
     }
-    return res.redirect("/admin/login"); // Redirect if not authenticated
+    return res.redirect("/admin/login");
 };
 
 
