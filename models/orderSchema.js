@@ -18,6 +18,10 @@ const orderSchema = new Schema({
             type: Number,
             required: true
         },
+        size: {
+            type: String,
+            required: true
+        },
         price: {
             type: Number,
             default: 0
@@ -39,6 +43,11 @@ const orderSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: "User",
         required: true
+    },
+    paymentMethod: {
+        type: String,
+        enum: ["COD", "Online"],
+        default: "COD"
     },
     invoiceDate: {
         type: Date,

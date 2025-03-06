@@ -127,11 +127,11 @@
                                     <div class="bt-1 border-color-1 mt-30 mb-30"></div>
 
                                     <div class="detail-extralink">
-                                        <div class="detail-qty border radius">
+                                        <div class="detail-qty border radius" data-quantity="<%= product.quantity %>">
                                             <a href="#" class="qty-down"><i class="fi-rs-angle-small-down"></i></a>
                                             <span class="qty-val" id="quantity">1</span>
                                             <a href="#" class="qty-up"><i class="fi-rs-angle-small-up"></i></a>
-                                        </div>
+                                        </div>                                                                                
                                         <div class="product-extra-link2">
                                             <button type="button" class="button button-add-to-cart" id="addToCartBtn" data-product-id="<%= product._id %>">
                                                 Add to Cart
@@ -161,6 +161,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const selectedSizeInput = document.getElementById("selectedSize");
     const dynamicSalePrice = document.getElementById("dynamicSalePrice");
     const addToCartBtn = document.getElementById("addToCartBtn");
+    const quantityElement = document.getElementById("quantity"); // ✅ Target quantity element
 
     let basePrice = parseFloat(dynamicSalePrice.innerText.replace("₹", "").trim());
     const baseSize = 6;
@@ -178,6 +179,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
             selectedSizeInput.value = selectedSize;
             dynamicSalePrice.innerText = `₹${selectedPrice}`;
+
+            // ✅ Reset quantity to 1 when changing size
+            quantityElement.textContent = "1"; 
         });
     });
 
@@ -199,7 +203,7 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(data => {
             if (data.status) {
                 Swal.fire("Success!", "Added to cart successfully", "success").then(() => {
-                    window.location.reload(); // Reload the page to update the cart
+                    window.location.reload();
                 });
             } else {
                 Swal.fire("Error!", data.message || "Something went wrong", "error");
@@ -210,7 +214,38 @@ document.addEventListener("DOMContentLoaded", function () {
             Swal.fire("Error!", "Server error occurred", "error");
         });
     });
+
+    // ✅ Quantity Management System
+    document.querySelectorAll(".detail-qty").forEach(qtyContainer => {
+        let quantityElement = qtyContainer.querySelector(".qty-val");
+        let increaseBtn = qtyContainer.querySelector(".qty-up");
+        let decreaseBtn = qtyContainer.querySelector(".qty-down");
+
+        let stockLimit = parseInt(qtyContainer.getAttribute("data-quantity"), 10) || 1; 
+        let quantity = 1; // ✅ Reset quantity on page load
+
+        quantityElement.textContent = quantity;
+
+        increaseBtn.addEventListener("click", function (event) {
+            event.preventDefault();
+            if (quantity < stockLimit) {
+                quantity++;
+                quantityElement.textContent = quantity;
+            } else {
+                Swal.fire("Stock Limit Reached!", "You can't add more than " + stockLimit, "warning");
+            }
+        });
+
+        decreaseBtn.addEventListener("click", function (event) {
+            event.preventDefault();
+            if (quantity > 1) {
+                quantity--;
+                quantityElement.textContent = quantity;
+            }
+        });
+    });
 });
+
 
 </script>
 <%- include("../../views/partials/user/footer") %>

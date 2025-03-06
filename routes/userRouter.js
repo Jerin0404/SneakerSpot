@@ -87,7 +87,8 @@ router.post("/changeQuantity", cartController.changeQuantity);
 router.post('/removeProduct', cartController.removeProductFromCart);
 
 //Order Management
-router.get("/checkout", userAuth, orderController.getCheckoutPage)
+router.get("/checkout", userAuth, orderController.getCheckoutPage);
+router.get("/deleteItem", userAuth, orderController.deleteProduct);
 
 
 module.exports = router

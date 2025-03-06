@@ -81,16 +81,10 @@
                                             </td>
                             
                                             <td class="price" data-title="Price">
-                                                ₹<span>
-                                                    <% if (data[i].price) { %>
-                                                        <text id="subTotal<%= data[i].productId %>">
-                                                            <%= data[i].price * data[i].quantity %>
-                                                        </text>
-                                                    <% } else { %>
-                                                        <text>Price Not Available</text>
-                                                    <% } %>
+                                                ₹<span id="price<%= i %>">
+                                                    <%= parseFloat(data[i].price).toFixed(2) %>
                                                 </span>
-                                            </td>
+                                            </td>                                                                                                                                                                      
                             
                                             <td class="text-center" data-title="Stock">
                                                 <div class="detail-qty border radius m-auto">
@@ -119,8 +113,10 @@
                                             
                                             <!-- Subtotal Column -->
                                             <td class="text-center" id="subTotal<%= i %>">
-                                                ₹<%= data[i].quantity * data[i].price %>
-                                            </td>                                                                                    
+                                                ₹<span id="subTotalValue<%= i %>">
+                                                    <%= data[i].totalPrice.toFixed(2) %> 
+                                                </span>
+                                            </td>                                                                                                                                                                       
                                             <td class="action" data-title="Remove">
                                                 <a class="btn btn-sm"
                                                     href="#" onclick="confirmRemove('<%= data[i].cartId %>', '<%= data[i].productId %>', '<%= i %>')">
@@ -190,14 +186,19 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    console.log("Cart Data:", '<%= JSON.stringify(data) %>');
+</script>
+
+<script>
     function changeQuantity(cartId, productId, count, productPrice, stockLimit, index) {
     console.log("Index received:", index);
 
     const cartProductQuantityElement = document.querySelector(`#cartProductQuantity${index}`);
-    const subtotalElement = document.querySelector(`#subTotal${index}`);
+    const subtotalElement = document.querySelector(`#subTotalValue${index}`);
     const totalPriceElement = document.getElementById('total');
+    const priceElement = document.querySelector(`#price${index}`);
 
-    if (!cartProductQuantityElement || !subtotalElement) {
+    if (!cartProductQuantityElement || !subtotalElement || !priceElement) {
         console.error(`Element not found for index: ${index}`);
         return;
     }
@@ -205,11 +206,9 @@
     let currentQuantity = parseInt(cartProductQuantityElement.value);
     let newQuantity = currentQuantity + count;
 
-
     if (newQuantity < 1) {
         return;
     }
-
 
     if (newQuantity > stockLimit) {
         Swal.fire({
@@ -221,7 +220,14 @@
         return;
     }
 
-    let newSubtotal = (newQuantity * productPrice).toFixed(2);
+    // Ensure price is correctly extracted
+    let price = parseFloat(priceElement.textContent.replace('₹', '').trim());
+    if (isNaN(price)) {
+        console.error("Invalid price detected:", price);
+        return;
+    }
+
+    let newSubtotal = (newQuantity * price).toFixed(2);
 
     $.ajax({
         url: '/changeQuantity',
@@ -236,12 +242,9 @@
         success: (response) => {
             if (response.success) {
                 cartProductQuantityElement.value = newQuantity;
-
-                subtotalElement.innerHTML = `₹${newSubtotal}`;
-
+                subtotalElement.textContent = `₹${parseFloat(newSubtotal).toFixed(2)}`;
                 totalPriceElement.innerHTML = `₹${response.grandTotal.toFixed(2)}`;
             } else {
-                console.error("Error in response:", response);
                 Swal.fire({
                     title: 'Error!',
                     text: response.error || 'Could not update quantity. Try again.',
@@ -251,7 +254,6 @@
             }
         },
         error: (xhr, status, error) => {
-            console.error("AJAX Error:", xhr.responseText);
             Swal.fire({
                 title: 'Error!',
                 text: 'Could not update quantity. Try again.',
@@ -261,6 +263,8 @@
         }
     });
 }
+
+
 
 function confirmRemove(cartId, productId, index) {
     Swal.fire({

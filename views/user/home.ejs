@@ -56,7 +56,7 @@
                         </div>
                         <div class="banner__item__text">
                             <h2>Shoe Collections 2030</h2>
-                            <a href="#">Shop now</a>
+                            <a href="/shop">Shop now</a>
                         </div>
                     </div>
                 </div>
@@ -67,7 +67,7 @@
                         </div>
                         <div class="banner__item__text">
                             <h2>Nike Shoes</h2>
-                            <a href="#">Shop now</a>
+                            <a href="/shop">Shop now</a>
                         </div>
                     </div>
                 </div>
@@ -78,7 +78,7 @@
                         </div>
                         <div class="banner__item__text">
                             <h2>Shoes Spring 2030</h2>
-                            <a href="#">Shop now</a>
+                            <a href="/shop">Shop now</a>
                         </div>
                     </div>
                 </div>
@@ -113,8 +113,8 @@
                     </div>
                     <div class="product-info text-center">
                         <h6 class="product-name"><%= products[i].productName %></h6>
-                        <p class="product-price">$<%= products[i].salePrice %></p>
-                        <a href="/addToCart?id=<%= products[i]._id %>" class="btn btn-primary">Add to Cart</a>
+                        <p class="product-price">₹<%= products[i].salePrice %></p>
+                        <button class="add-to-cart-btn" data-id="<%= products[i]._id %>">Add to Cart</button> 
                     </div>
                 </div>
             </div>
@@ -129,6 +129,29 @@
     .new-arrivals {
         padding: 60px 0;
     }
+    .add-to-cart-btn {
+    background-color: #ff4757;  /* Vibrant Red */
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    text-transform: uppercase;
+    width: 100%;
+    }
+
+    .add-to-cart-btn:hover {
+    background-color: #e84118;  /* Darker Red on Hover */
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .add-to-cart-btn:active {
+    transform: scale(0.95);
+    }
+
     
     .section-title h2 {
         font-size: 28px;
@@ -217,47 +240,130 @@
     }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-    const wishlistButtons = document.querySelectorAll(".wishlist-btn");
+    $(document).ready(function () {
+    $(".wishlist-btn").click(function () {
+        let productId = $(this).data("id");
 
-    wishlistButtons.forEach(button => {
-        button.addEventListener("click", function (event) {
-            event.preventDefault();
+        if (!productId) {
+            Swal.fire("Error!", "Product ID is missing", "error");
+            return;
+        }
 
-            const productId = this.getAttribute("data-id");
+        console.log("Adding to wishlist:", productId); // Debugging log
 
-            fetch("/addToWishlist", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ productId })
-            })
-            .then(response => response.json())
-            .then(data => {
+        $.ajax({
+            url: '/addToWishlist',
+            method: 'POST',
+            data: { productId: productId },
+            success: function (response) {
+                console.log("Server response:", response); // Debugging log
 
-                if (data.status === true) {
+                if (response.status) {
                     Swal.fire({
-                        icon: "success",
-                        title: "Added to Wishlist!",
-                        text: "This product has been successfully added to your wishlist.",
-                        timer: 2000,
-                        showConfirmButton: false
+                        title: 'Added to wishlist',
+                        text: 'The product has been added to your wishlist',
+                        icon: 'success',
+                        timer: 2000
                     });
                 } else {
                     Swal.fire({
-                        icon: "error",
-                        title: "Already in Wishlist",
-                        text: data.message || "The product already in the wishlist please visit the wishlist page.",
+                        title: 'Already in wishlist',
+                        text: response.message || "This item is already in your wishlist",
+                        icon: 'info',
+                        timer: 2000
                     });
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("AJAX error:", error); // Debugging log
+
+                Swal.fire({
+                    title: 'Error',
+                    text: 'There was an error adding the product to your wishlist',
+                    icon: 'error',
+                    timer: 2000
+                });
+            }
+        });
+    });
+});
+
+    function addToWishlist(productId) {
+        $.ajax({
+            url: '/addToWishlist',
+            method: 'POST',
+            data: {productId : productId},
+            success: (response) => {
+                if(response.status) {
+                    Swal.fire({
+                        title: 'Added to wishlist',
+                        text: 'The product has been added to your wishlist',
+                        icon: 'success',
+                        timer: 2000
+                    })
+                }else {
+                    Swal.fire({
+                        title: 'Already in wishlist',
+                        text: response.message,
+                        icon: 'info',
+                        timer: 2000
+                    })
+                }
+            },
+            error: (error) => {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'There was an error adding the product to your wishlist',
+                    icon: 'error',
+                    timer: 2000
+                })
+            }
+        })
+    }
+    document.addEventListener("DOMContentLoaded", function () {
+    const addToCartButtons = document.querySelectorAll(".add-to-cart-btn");
+
+    addToCartButtons.forEach(button => {
+        button.addEventListener("click", function () {
+            const productId = this.getAttribute("data-id")?.trim(); 
+
+            if (!productId) {
+                Swal.fire("Error!", "Product ID is missing", "error");
+                return;
+            }
+
+            console.log("Adding to cart:", productId); // Debugging log
+
+            fetch("/addToCart", { 
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ productId })  // Add additional fields if required
+            })
+            .then(async response => {
+                const responseText = await response.text();
+                console.log("Raw response:", responseText); // Debugging log
+                
+                try {
+                    return JSON.parse(responseText);
+                } catch (e) {
+                    throw new Error("Invalid JSON response from server");
+                }
+            })
+            .then(data => {
+                console.log("Server response:", data); // Debugging log
+
+                if (data.status) {
+                    Swal.fire("Success!", "Added to cart successfully", "success");
+                } else {
+                    Swal.fire("Error!", data.message || "Something went wrong", "error");
                 }
             })
             .catch(error => {
-                console.error("Fetch Error:", error);
-                Swal.fire({
-                    icon: "error",
-                    title: "Error",
-                    text: "Something went wrong. Please try again later.",
-                });
+                console.error("Fetch error:", error);
+                Swal.fire("Error!", error.message || "Server error occurred", "error");
             });
         });
     });

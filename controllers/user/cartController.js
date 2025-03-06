@@ -13,14 +13,13 @@ const viewCart = async (req, res) => {
 
         const cart = await Cart.findOne({ userId })
             .populate({
-            path: "items.productId",
-            select: "name productImage salePrice stock category brand",
+                path: "items.productId",
+                select: "name productImage salePrice stock category brand",
                 populate: [
-                    { path: "category", select: "name" },  
-                    { path: "brand", select: "name" }  
+                    { path: "category", select: "name" },
+                    { path: "brand", select: "name" }
                 ]
-        });
-
+            });
 
         if (!cart || cart.items.length === 0) {
             return res.render("cart", {
@@ -37,7 +36,12 @@ const viewCart = async (req, res) => {
             const product = item.productId;
             if (!product) return null;
 
-            const totalPrice = product.salePrice * item.quantity;
+            // Ensure size is handled correctly (₹200 increase per size increment)
+            let basePrice = product.salePrice;
+            let sizeMultiplier = !isNaN(parseInt(item.size)) ? parseInt(item.size) - 6 : 0; 
+            let adjustedPrice = basePrice + (sizeMultiplier * 200);
+
+            const totalPrice = adjustedPrice * item.quantity;
             grandTotal += totalPrice;
 
             return {
@@ -49,7 +53,7 @@ const viewCart = async (req, res) => {
                 brand: product.brand?.name || "Unknown Brand",
                 size: item.size || "Not Specified",
                 quantity: item.quantity,
-                price: product.salePrice,
+                price: adjustedPrice, // Send the correct adjusted price to the frontend
                 totalPrice,
                 status: item.status,
                 isOutOfStock: product.stock < item.quantity
@@ -74,6 +78,8 @@ const viewCart = async (req, res) => {
         });
     }
 };
+
+
 
 
 
