@@ -6,7 +6,6 @@ const Coupon = require("../../models/couponSchema");
 
 const getCheckoutPage = async (req, res) => {
     try {
-
         const userId = req.session.user?.id;
 
         if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
@@ -21,17 +20,23 @@ const getCheckoutPage = async (req, res) => {
             console.error("User not found for ID:", userId);
             return res.redirect("/pageNotFound");
         }
+
         const addressData = await Address.findOne({ userId: userObjectId });
-        const cartData = await Cart.findOne({ userId: userObjectId }).populate("items.productId");
+
+        const cartData = await Cart.findOne({ userId: userObjectId })
+            .populate({
+                path: "items.productId",
+                model: "Product",
+            });
 
         if (!cartData || !cartData.items || cartData.items.length === 0) {
             console.error("Cart is empty or invalid for user ID:", userId);
             return res.redirect("/shop");
         }
 
+
         let grandTotal = cartData.items.reduce((total, item) => {
             if (!item.productId || !item.productId.salePrice || !item.quantity) {
-                console.error("Invalid cart item:", item);
                 return total;
             }
             return total + item.quantity * item.productId.salePrice;
@@ -67,20 +72,31 @@ const getCheckoutPage = async (req, res) => {
 
 const deleteProduct = async (req, res) => {
     try {
-        const id = req.query.id;
-        const userId = req.session.user;
-        const user = await User.findById(userId);
-        const cartIndex = user.cart.findIndex((item) => item.productId == id);
-        user.cart.splice(cartIndex, 1);
-        await user.save();
-        res.redirect("/checkout");
-    } catch (error) {
-        res.redirect("/pageNotFound");
-    }
-    
-}
+        const id = req.params.id; // Get product ID from request parameters
+        const userId = req.session.user._id; // Assuming you're using sessions for user authentication
 
-module.exports = { 
+        // Find and update the user's cart by removing the product
+        const updatedCart = await Cart.findOneAndUpdate(
+            { userId },
+            { $pull: { products: { productId: id } } }, // Remove the product from cart
+            { new: true } // Return the updated cart
+        );
+
+        if (!updatedCart) {
+            return res.status(404).json({ success: false, message: "Cart not found" });
+        }
+
+        res.json({ success: true, message: "Product removed successfully" });
+
+    } catch (error) {
+        console.error("Error deleting product:", error);
+        res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+
+
+
+module.exports = {
     getCheckoutPage,
     deleteProduct,
 };

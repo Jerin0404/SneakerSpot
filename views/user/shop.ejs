@@ -464,7 +464,7 @@
                         <p>Brand: <%=products[i].brand%></p>
                         <p>Price: <%=products[i].salePrice.toLocaleString('en-IN')%> <span class="text-muted"><strike>₹<%=products[i].regularPrice%></strike></span></p>
                     </a>
-                    <button class="add-to-cart-btn" data-id="<%= products[i]._id %>">Add to Cart</button>             
+                    <!-- <button class="add-to-cart-btn" data-id="<%= products[i]._id %>">Add to Cart</button>              -->
                 </div>
                 <%}%>
             </main>
@@ -628,51 +628,51 @@
             }
         })
     }
-    document.addEventListener("DOMContentLoaded", function () {
-    const addToCartButtons = document.querySelectorAll(".add-to-cart-btn");
+    // document.addEventListener("DOMContentLoaded", function () {
+    // const addToCartButtons = document.querySelectorAll(".add-to-cart-btn");
 
-    addToCartButtons.forEach(button => {
-        button.addEventListener("click", function () {
-            const productId = this.getAttribute("data-id")?.trim(); 
+    // addToCartButtons.forEach(button => {
+    //     button.addEventListener("click", function () {
+    //         const productId = this.getAttribute("data-id")?.trim(); 
 
-            if (!productId) {
-                Swal.fire("Error!", "Product ID is missing", "error");
-                return;
-            }
+    //         if (!productId) {
+    //             Swal.fire("Error!", "Product ID is missing", "error");
+    //             return;
+    //         }
 
-            console.log("Adding to cart:", productId); // Debugging log
+    //         console.log("Adding to cart:", productId); // Debugging log
 
-            fetch("/addToCart", { 
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ productId })  // Add additional fields if required
-            })
-            .then(async response => {
-                const responseText = await response.text();
-                console.log("Raw response:", responseText); // Debugging log
+    //         fetch("/addToCart", { 
+    //             method: "POST",
+    //             headers: { "Content-Type": "application/json" },
+    //             body: JSON.stringify({ productId })  // Add additional fields if required
+    //         })
+    //         .then(async response => {
+    //             const responseText = await response.text();
+    //             console.log("Raw response:", responseText); // Debugging log
                 
-                try {
-                    return JSON.parse(responseText);
-                } catch (e) {
-                    throw new Error("Invalid JSON response from server");
-                }
-            })
-            .then(data => {
-                console.log("Server response:", data); // Debugging log
+    //             try {
+    //                 return JSON.parse(responseText);
+    //             } catch (e) {
+    //                 throw new Error("Invalid JSON response from server");
+    //             }
+    //         })
+    //         .then(data => {
+    //             console.log("Server response:", data); // Debugging log
 
-                if (data.status) {
-                    Swal.fire("Success!", "Added to cart successfully", "success");
-                } else {
-                    Swal.fire("Error!", data.message || "Something went wrong", "error");
-                }
-            })
-            .catch(error => {
-                console.error("Fetch error:", error);
-                Swal.fire("Error!", error.message || "Server error occurred", "error");
-            });
-        });
-    });
-});
+    //             if (data.status) {
+    //                 Swal.fire("Success!", "Added to cart successfully", "success");
+    //             } else {
+    //                 Swal.fire("Error!", data.message || "Something went wrong", "error");
+    //             }
+    //         })
+    //         .catch(error => {
+    //             console.error("Fetch error:", error);
+    //             Swal.fire("Error!", error.message || "Server error occurred", "error");
+    //         });
+    //     });
+//     });
+// });
 
 
 </script>

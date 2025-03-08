@@ -38,7 +38,7 @@ const viewCart = async (req, res) => {
 
             // Ensure size is handled correctly (₹200 increase per size increment)
             let basePrice = product.salePrice;
-            let sizeMultiplier = !isNaN(parseInt(item.size)) ? parseInt(item.size) - 6 : 0; 
+            let sizeMultiplier = !isNaN(parseInt(item.size)) ? parseInt(item.size) - 6 : 0;
             let adjustedPrice = basePrice + (sizeMultiplier * 200);
 
             const totalPrice = adjustedPrice * item.quantity;
@@ -78,8 +78,6 @@ const viewCart = async (req, res) => {
         });
     }
 };
-
-
 
 
 
@@ -123,7 +121,7 @@ const addToCart = async (req, res) => {
         );
 
         if (existingItemIndex > -1) {
-            cart.items[existingItemIndex].quantity += quantity;
+            cart.items[existingItemIndex].quantity = quantity;
             cart.items[existingItemIndex].totalPrice =
                 cart.items[existingItemIndex].quantity * cart.items[existingItemIndex].price;
         } else {
@@ -139,9 +137,7 @@ const addToCart = async (req, res) => {
         await cart.save();
 
         await User.findByIdAndUpdate(userId, { $addToSet: { cart: cart._id } });
-        await User.findByIdAndUpdate(userId, {
-            $pull: { wishlist: productId }
-        });
+        await User.findByIdAndUpdate(userId, { $pull: { wishlist: productId } });
 
         return res.status(200).json({ status: true, message: "Added to cart successfully and removed from wishlist", cart });
     } catch (error) {
@@ -151,57 +147,72 @@ const addToCart = async (req, res) => {
 };
 
 
-
-
 const changeQuantity = async (req, res) => {
     const { cartId, productId, quantity } = req.body;
 
     try {
-        const product = await Product.findById(productId);
+        const cart = await Cart.findById(cartId);
 
-        if (!product) {
-            return res.json({ success: false, error: "Product not found!" });
+        if (!cart) {
+            return res.json({ success: false, error: "Cart not found!" });
         }
 
-        await Cart.updateOne({ _id: cartId, "items.productId": productId }, {
-            $set: { "items.$.quantity": quantity }
+        // Find the product inside the cart
+        let productIndex = cart.items.findIndex(item => item.productId.toString() === productId);
+        if (productIndex === -1) {
+            return res.json({ success: false, error: "Product not found in cart!" });
+        }
+
+        // Update quantity and subtotal (totalPrice)
+        cart.items[productIndex].quantity = quantity;
+        cart.items[productIndex].totalPrice = quantity * cart.items[productIndex].price;
+
+        // Save updated cart
+        await cart.save();
+
+        // Recalculate grand total
+        const grandTotal = cart.items.reduce((sum, item) => sum + item.totalPrice, 0);
+
+        res.json({
+            success: true,
+            newSubtotal: cart.items[productIndex].totalPrice,
+            grandTotal
         });
-
-
-        const updatedCart = await Cart.findById(cartId);
-        const grandTotal = updatedCart.items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
-
-        res.json({ success: true, grandTotal });
 
     } catch (error) {
         console.error("Error updating quantity:", error);
         res.status(500).json({ success: false, error: "Server error!" });
     }
-}
+};
+
 
 const removeProductFromCart = async (req, res) => {
     const { cartId, productId } = req.body;
-    
+
     try {
+        const { cartId, productId } = req.body;
+
         let cart = await Cart.findById(cartId);
         if (!cart) {
-            console.log("Cart not found");
-            return res.json({ success: false, error: "Cart not found!" });
+            return res.status(404).json({ success: false, message: "Cart not found" });
         }
 
         cart.items = cart.items.filter(item => item.productId.toString() !== productId);
-
-        let grandTotal = cart.items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
-
         await cart.save();
 
-        console.log("Product removed successfully. New total:", grandTotal);
+        // Calculate new grand total
+        let grandTotal = cart.items.reduce((sum, item) => sum + item.totalPrice, 0);
 
-        return res.json({ success: true, grandTotal });
+        return res.status(200).json({
+            success: true,
+            message: "Product removed from cart",
+            grandTotal,
+            cartItemCount: cart.items.length  // Send updated cart count
+        });
 
     } catch (error) {
-        console.error("Error removing product from cart:", error);
-        res.status(500).json({ success: false, error: "Server error!" });
+        console.error("Error removing product:", error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
     }
 };
 
