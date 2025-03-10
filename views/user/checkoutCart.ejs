@@ -419,8 +419,7 @@
                                     </tr>
                                 </tbody>
                             </table>
-                            <button type="button" class="btn btn-checkout w-100"
-                                onclick="placeOrder('<%= user._id %>')">Place Order</button>
+                            <button id="placeOrderBtn">Place Order</button>
                         </div>
                     </div>
                 </div>
@@ -457,6 +456,45 @@
                 }
             });
         }
+        document.addEventListener("DOMContentLoaded", function () {
+    const placeOrderBtn = document.getElementById("placeOrderBtn");
+    
+    if (placeOrderBtn) {
+        placeOrderBtn.addEventListener("click", async () => {
+            try {
+                const selectedAddress = document.querySelector('input[name="selectedAddress"]:checked').value;
+                const paymentMethod = document.querySelector('input[name="payment_option"]:checked').value;
+                const totalAmount = document.getElementById("totalValue").innerText.replace('₹', '');
+
+                const response = await fetch("/order", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        userId: "67b954e5dbce0384029f7361",
+                        selectedAddress: selectedAddress,
+                        paymentMethod: paymentMethod,
+                        totalAmount: parseFloat(totalAmount),
+                        couponApplied: null, 
+                    }),
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    window.location.href = data.redirectUrl;
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                console.error("Error placing order:", error);
+                alert("Something went wrong. Please try again.");
+            }
+        });
+    } else {
+        console.error("Error: 'placeOrderBtn' button not found on this page.");
+    }
+});
     </script>
 
     <%- include("../../views/partials/user/footer") %>

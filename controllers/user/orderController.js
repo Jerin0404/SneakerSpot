@@ -3,6 +3,7 @@ const User = require("../../models/userSchema");
 const Cart = require("../../models/cartSchema");
 const Address = require("../../models/addressSchema");
 const Coupon = require("../../models/couponSchema");
+const Order = require("../../models/orderSchema");
 
 const getCheckoutPage = async (req, res) => {
     try {
@@ -72,14 +73,13 @@ const getCheckoutPage = async (req, res) => {
 
 const deleteProduct = async (req, res) => {
     try {
-        const id = req.params.id; // Get product ID from request parameters
-        const userId = req.session.user._id; // Assuming you're using sessions for user authentication
+        const id = req.params.id;
+        const userId = req.session.user._id;
 
-        // Find and update the user's cart by removing the product
         const updatedCart = await Cart.findOneAndUpdate(
             { userId },
-            { $pull: { products: { productId: id } } }, // Remove the product from cart
-            { new: true } // Return the updated cart
+            { $pull: { products: { productId: id } } },
+            { new: true }
         );
 
         if (!updatedCart) {
@@ -93,10 +93,71 @@ const deleteProduct = async (req, res) => {
         res.status(500).json({ success: false, message: "Internal server error" });
     }
 };
+const order = async (req, res) => {
+    try {
+        const { userId, selectedAddress, paymentMethod, totalAmount, couponApplied } = req.body;
+        const cart = await Cart.findOne({ userId }).populate("items.productId");
+        if (!cart || cart.items.length === 0) {
+            return res.status(400).json({ success: false, message: "Your cart is empty" });
+        }
+
+        const addressDoc = await Address.findOne({ userId });
+        if (!addressDoc || !addressDoc.address || addressDoc.address.length === 0) {
+            return res.status(400).json({ success: false, message: "No address found for this user" });
+        }
+
+        const address = addressDoc.address.id(selectedAddress);
+        if (!address) {
+            return res.status(400).json({ success: false, message: "Invalid address selection" });
+        }
 
 
+        const orderItems = cart.items.map(item => ({
+            product: item.productId._id,
+            quantity: item.quantity,
+            size: item.size || "N/A",
+            price: item.productId.salePrice,
+        }));
 
+        const totalPrice = cart.items.reduce((total, item) => total + (item.productId.salePrice * item.quantity), 0);
+        const finalAmount = totalPrice - (couponApplied?.discount || 0);
+
+        const newOrder = new Order({
+            orderItems,
+            totalPrice,
+            finalAmount,
+            address: selectedAddress,
+            paymentMethod: paymentMethod === "cod" ? "COD" : paymentMethod,
+            couponApplied: !!couponApplied,
+        });
+
+        await newOrder.save();
+        await Cart.findOneAndDelete({ userId });
+
+        return res.status(200).json({
+            success: true,
+            message: "Order placed successfully",
+            orderId: newOrder._id,
+            redirectUrl: "/orderSuccess",
+        });
+
+    } catch (error) {
+        console.error("Error placing order:", error);
+        return res.status(500).json({ success: false, message: "Something went wrong" });
+    }
+};
+
+const getOrderSuccessPage = async (req, res) => {
+    try {
+        res.render("orderSuccess");
+    } catch (error) {
+        console.error("Error rendering order success page:", error);
+        res.status(500).send("Something went wrong");
+    }
+};
 module.exports = {
     getCheckoutPage,
     deleteProduct,
+    order,
+    getOrderSuccessPage,
 };
