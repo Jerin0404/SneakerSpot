@@ -1,73 +1,26 @@
 const mongoose = require("mongoose");
-const { Schema } = mongoose;
-const { v4: uuidv4 } = require("uuid");
 
-const orderSchema = new Schema({
-    orderId: {
-        type: String,
-        default: () => uuidv4(),
-        unique: true,
-    },
-    orderItems: [{
-        product: {
-            type: Schema.Types.ObjectId,
-            ref: "Product",
-            required: true,
-        },
-        quantity: {
-            type: Number,
-            required: true,
-        },
-        size: {
-            type: String,
-            required: true,
-        },
-        price: {
-            type: Number,
-            default: 0,
-        },
-    }],
-    totalPrice: {
-        type: Number,
-        required: true,
-    },
-    discount: {
-        type: Number,
-        default: 0,
-    },
-    finalAmount: {
-        type: Number,
-        required: true,
-    },
+const orderSchema = new mongoose.Schema({
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    orderId: { type: String, required: true, unique: true },
+    orderItems: { type: Array, required: true },
+    totalPrice: { type: Number, required: true },
+    finalAmount: { type: Number, required: true },
     address: {
-        type: Schema.Types.ObjectId,
-        ref: "Address",
-        required: true,
+        name: { type: String, required: true }, // ✅ Changed from fullName to name
+        phone: { type: Number, required: true },
+        city: { type: String, required: true },
+        state: { type: String, required: true },
+        pincode: { type: Number, required: true }, // ✅ Changed from zipCode to pincode
+        landMark: { type: String, default: "" },
     },
-    paymentMethod: {
-        type: String,
-        enum: ["COD", "Online", "Wallet"],
-        default: "COD",
+    paymentMethod: { 
+        type: String, 
+        enum: ["COD", "Online"], // ✅ Ensure "COD" is capitalized
+        required: true 
     },
-    invoiceDate: {
-        type: Date,
-        default: Date.now,
-    },
-    status: {
-        type: String,
-        enum: ["Pending", "Processing", "Shipped", "Delivered", "Cancelled", "Return Request", "Returned"],
-        default: "Pending",
-    },
-    createdOn: {
-        type: Date,
-        default: Date.now,
-        required: true,
-    },
-    couponApplied: {
-        type: Boolean,
-        default: false,
-    },
-});
+    status: { type: String, default: "Pending" },
+}, { timestamps: true });
 
 const Order = mongoose.model("Order", orderSchema);
 module.exports = Order;

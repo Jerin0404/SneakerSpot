@@ -91,5 +91,5 @@ router.get("/checkout", userAuth, orderController.getCheckoutPage);
 router.delete("/deleteItem", userAuth, orderController.deleteProduct);
 router.post("/order", orderController.order);
 router.get("/orderSuccess", userAuth, orderController.getOrderSuccessPage);
-
+router.get("/order-details/:orderId", orderController.getOrderDetails);
 module.exports = router
